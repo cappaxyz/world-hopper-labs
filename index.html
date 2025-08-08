@@ -11,7 +11,6 @@
     .muted{opacity:.7}
     .error{color:#b00020}
     .ok{color:#0b8457}
-    .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
     #worlds{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.5rem}
     .small{font-size:.9em}
   </style>
@@ -25,7 +24,7 @@
   <main>
     <article>
       <form id="runForm">
-        <div class="grid-3">
+        <div class="grid">
           <label>ISP ASN
             <input id="asn" type="number" placeholder="e.g., 1221" required value="1221"/>
           </label>
@@ -33,8 +32,8 @@
             <select id="capital" required>
               <option>SYD</option><option selected>MEL</option><option>BNE</option>
               <option>ADL</option><option>PER</option><option>CBR</option>
-              <option>HBA</option><option>DRW</option><option>AKL</option>
-              <option>WLG</option><option>CHC</option>
+              <option>HBA</option><option>DRW</option>
+              <option>AKL</option><option>WLG</option><option>CHC</option>
             </select>
           </label>
           <label>TCP Port
@@ -63,7 +62,7 @@
         </thead>
         <tbody id="tbody"></tbody>
       </table>
-      <p class="small muted">Note: results usually arrive within ~3–15s; we poll with backoff up to ~60s.</p>
+      <p class="small muted">Note: results usually arrive within ~3–15s; we poll with backoff up to ~75s.</p>
     </article>
   </main>
 
@@ -73,6 +72,7 @@
   const WORLDS_JSON = "/data/worlds-au-nz.json";
   const MAX_WORLDS = 5;
 
+  // ==== helpers ====
   const $ = (id) => document.getElementById(id);
   const setStatus = (msg, cls="muted") => { const el=$("status"); el.textContent=msg; el.className=`mono ${cls}`; };
   const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
@@ -161,29 +161,41 @@
 
       setStatus("Creating measurements…");
       const runId = await createMeasurement(asn, capital, worlds, port);
-      setStatus(`Run ${runId} created. Waiting for results…`);
+      setStatus(`Run created. Waiting for results…`);
 
-      // Poll with backoff up to ~60s. Only stop when we have real data.
-      const schedule = [2000, 3000, 4000, 5000, 7000, 9000, 12000, 15000];
-      let finished = false;
-      for (let i=0;i<schedule.length;i++){
+      // === Poll up to ~75s; wait until BOTH ping & traceroute are present for each world ===
+      const schedule = [2000, 3000, 4000, 5000, 7000, 9000, 12000, 15000, 18000, 20000];
+      let allDone = false;
+
+      for (let i = 0; i < schedule.length; i++) {
         await sleep(schedule[i]);
+
         const res = await fetchResults(runId);
         if (res) {
           renderResults(res);
-          const ready = res.results.some(row =>
-            (row.ping && Number(row.ping.samples) > 0) ||
-            (row.traceroute && Number(row.traceroute.hops) > 0)
-          );
-          if (ready) {
+
+          // a world is done only when it has ping samples AND traceroute hops
+          const perWorldDone = res.results.map(row => {
+            const pingReady = Number(row?.ping?.samples || 0) > 0;
+            const trReady   = row?.traceroute?.hops != null;
+            return pingReady && trReady;
+          });
+
+          const doneCount = perWorldDone.filter(Boolean).length;
+          allDone = doneCount === res.results.length;
+
+          if (allDone) {
             setStatus("Done.", "ok");
-            finished = true;
             break;
+          } else {
+            setStatus(`Waiting for traceroutes… ${doneCount}/${res.results.length} worlds ready (attempt ${i+1}/${schedule.length})`);
           }
+        } else {
+          setStatus(`Waiting for results… (attempt ${i+1}/${schedule.length})`);
         }
-        setStatus(`Waiting for results… (attempt ${i+1}/${schedule.length})`);
       }
-      if (!finished) setStatus("Timed out waiting for results.", "error");
+
+      if (!allDone) setStatus("Timed out waiting for traceroutes.", "error");
     }catch(err){
       setStatus(String(err.message || err), "error");
     }finally{
