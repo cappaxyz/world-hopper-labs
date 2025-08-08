@@ -63,7 +63,7 @@
         </thead>
         <tbody id="tbody"></tbody>
       </table>
-      <p class="small muted">Note: results usually arrive within ~3–10s; we poll with backoff up to ~30s.</p>
+      <p class="small muted">Note: results usually arrive within ~3–15s; we poll with backoff up to ~60s.</p>
     </article>
   </main>
 
@@ -75,6 +75,8 @@
 
   const $ = (id) => document.getElementById(id);
   const setStatus = (msg, cls="muted") => { const el=$("status"); el.textContent=msg; el.className=`mono ${cls}`; };
+  const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+  const safe = (v)=> (v==null || v==="") ? "—" : v;
 
   async function loadWorlds(){
     try{
@@ -84,18 +86,20 @@
       const wrap = $("worlds"); wrap.innerHTML = "";
       list.forEach((w,i) => {
         const id = `w_${i}`;
-        const div = document.createElement("label");
-        div.innerHTML = `<input type="checkbox" id="${id}" value="${encodeURIComponent(JSON.stringify(w))}"> ${w.name} <span class="muted">(${w.host})</span>`;
-        wrap.appendChild(div);
+        const label = document.createElement("label");
+        label.innerHTML = `
+          <input type="checkbox" id="${id}" value="${encodeURIComponent(JSON.stringify(w))}">
+          ${w.name} <span class="muted">(${w.host})</span>`;
+        wrap.appendChild(label);
       });
+      setStatus("Done.", "ok");
     }catch(e){
       setStatus(`Failed to load world list: ${e.message||e}`, "error");
     }
   }
 
   async function selectProbe(asn, capital){
-    const url = `${API_BASE}/probes?asn=${encodeURIComponent(asn)}&capital=${encodeURIComponent(capital)}`;
-    const r = await fetch(url);
+    const r = await fetch(`${API_BASE}/probes?asn=${encodeURIComponent(asn)}&capital=${encodeURIComponent(capital)}`);
     const j = await r.json().catch(()=>({error:"bad_json"}));
     if(!r.ok || j.error) throw new Error(j.error || `probe_http_${r.status}`);
     return j.probe.id;
@@ -103,7 +107,9 @@
 
   async function createMeasurement(asn, capital, worlds, port){
     const body = JSON.stringify({ asn, capital, worlds, tcp_port: port });
-    const r = await fetch(`${API_BASE}/measure`, { method:"POST", headers:{ "content-type":"application/json" }, body });
+    const r = await fetch(`${API_BASE}/measure`, {
+      method:"POST", headers:{ "content-type":"application/json" }, body
+    });
     const j = await r.json().catch(()=>({error:"bad_json"}));
     if(!r.ok || j.error) throw new Error(j.error || `measure_http_${r.status}`);
     return j.run_id;
@@ -122,14 +128,14 @@
     res.results.forEach(row=>{
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${row.world}</td>
-        <td>${res.probe_id ?? "?"}</td>
-        <td>${row.ping?.rtt_med ?? "—"}</td>
-        <td>${row.ping?.rtt_p95 ?? "—"}</td>
-        <td>${row.ping?.jitter ?? "—"}</td>
-        <td>${row.ping?.loss_pct ?? "—"}</td>
-        <td>${row.traceroute?.hops ?? "—"}</td>
-        <td>${row.traceroute?.final_hop_rtt ?? "—"}</td>`;
+        <td>${safe(row.world)}</td>
+        <td>${safe(res.probe_id)}</td>
+        <td>${safe(row.ping?.rtt_med)}</td>
+        <td>${safe(row.ping?.rtt_p95)}</td>
+        <td>${safe(row.ping?.jitter)}</td>
+        <td>${safe(row.ping?.loss_pct)}</td>
+        <td>${safe(row.traceroute?.hops)}</td>
+        <td>${safe(row.traceroute?.final_hop_rtt)}</td>`;
       tb.appendChild(tr);
     });
   }
@@ -151,26 +157,33 @@
       const worlds = checks.map(c => JSON.parse(decodeURIComponent(c.value)).host);
 
       setStatus("Selecting probe…");
-      await selectProbe(asn, capital); // primarily to fail fast; measure will also select as needed
+      await selectProbe(asn, capital); // fail-fast; Worker can also auto-select
 
       setStatus("Creating measurements…");
       const runId = await createMeasurement(asn, capital, worlds, port);
       setStatus(`Run ${runId} created. Waiting for results…`);
 
-      // poll with gentle backoff ~30s total
-      const schedule = [2000, 2500, 3000, 4000, 5000, 6000, 7000];
+      // Poll with backoff up to ~60s. Only stop when we have real data.
+      const schedule = [2000, 3000, 4000, 5000, 7000, 9000, 12000, 15000];
+      let finished = false;
       for (let i=0;i<schedule.length;i++){
-        await new Promise(r=>setTimeout(r, schedule[i]));
+        await sleep(schedule[i]);
         const res = await fetchResults(runId);
-        if(res){
+        if (res) {
           renderResults(res);
-          setStatus("Done.", "ok");
-          btn.removeAttribute("aria-busy"); btn.disabled = false;
-          return;
+          const ready = res.results.some(row =>
+            (row.ping && Number(row.ping.samples) > 0) ||
+            (row.traceroute && Number(row.traceroute.hops) > 0)
+          );
+          if (ready) {
+            setStatus("Done.", "ok");
+            finished = true;
+            break;
+          }
         }
         setStatus(`Waiting for results… (attempt ${i+1}/${schedule.length})`);
       }
-      setStatus("Timed out waiting for results.", "error");
+      if (!finished) setStatus("Timed out waiting for results.", "error");
     }catch(err){
       setStatus(String(err.message || err), "error");
     }finally{
