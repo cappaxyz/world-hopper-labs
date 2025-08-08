@@ -4,153 +4,181 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>World Hopper Labs</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
-  <style> body{max-width:1100px;margin:auto} code{font-size:.9em} .mono{font-family:ui-monospace,Menlo,Consolas,monospace} </style>
+  <style>
+    body{max-width:1100px;margin:auto}
+    code,.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+    .muted{opacity:.7}
+    .error{color:#b00020}
+    .ok{color:#0b8457}
+    .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
+    #worlds{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.5rem}
+    .small{font-size:.9em}
+  </style>
 </head>
 <body>
   <header>
     <h1>World Hopper Labs</h1>
-    <p class="mono">Measure OSRS latency & pathing from your ISP region.</p>
+    <p class="mono muted">Measure OSRS latency & TCP pathing from your ISP + region.</p>
   </header>
 
   <main>
     <article>
       <form id="runForm">
-        <div class="grid">
-          <div>
-            <label>ISP ASN
-              <input id="asn" type="number" placeholder="e.g., 1221" required />
-            </label>
-          </div>
-          <div>
-            <label>Closest capital
-              <select id="capital" required>
-                <option value="SYD">SYD</option>
-                <option value="MEL" selected>MEL</option>
-                <option value="BNE">BNE</option>
-                <option value="ADL">ADL</option>
-                <option value="PER">PER</option>
-                <option value="CBR">CBR</option>
-                <option value="HBA">HBA</option>
-                <option value="DRW">DRW</option>
-                <option value="AKL">AKL</option>
-                <option value="WLG">WLG</option>
-                <option value="CHC">CHC</option>
-              </select>
-            </label>
-          </div>
-          <div>
-            <label>World
-              <select id="world"></select>
-            </label>
-          </div>
-          <div>
-            <label>TCP Port
-              <input id="port" type="number" value="43594" required />
-            </label>
-          </div>
+        <div class="grid-3">
+          <label>ISP ASN
+            <input id="asn" type="number" placeholder="e.g., 1221" required value="1221"/>
+          </label>
+          <label>Closest capital
+            <select id="capital" required>
+              <option>SYD</option><option selected>MEL</option><option>BNE</option>
+              <option>ADL</option><option>PER</option><option>CBR</option>
+              <option>HBA</option><option>DRW</option><option>AKL</option>
+              <option>WLG</option><option>CHC</option>
+            </select>
+          </label>
+          <label>TCP Port
+            <input id="port" type="number" value="43594" required />
+          </label>
         </div>
-        <button type="submit">Run test</button>
+
+        <details open>
+          <summary>Worlds (select up to 5)</summary>
+          <div id="worlds" class="small"></div>
+        </details>
+
+        <button id="runBtn" type="submit">Run test</button>
+        <span id="status" class="mono muted" style="margin-left:.6rem;">Ready.</span>
       </form>
     </article>
 
     <article>
-      <h3>Result</h3>
-      <pre id="status" class="mono">—</pre>
-      <table id="table" role="grid">
+      <h3>Results</h3>
+      <table role="grid">
         <thead>
-          <tr><th>World</th><th>Probe</th><th>RTT (med)</th><th>p95</th><th>Jitter</th><th>Loss %</th><th>Hops</th><th>Last hop RTT</th></tr>
+          <tr>
+            <th>World</th><th>Probe</th><th>RTT med</th><th>p95</th>
+            <th>Jitter</th><th>Loss %</th><th>Hops</th><th>Last-hop RTT</th>
+          </tr>
         </thead>
-        <tbody></tbody>
+        <tbody id="tbody"></tbody>
       </table>
+      <p class="small muted">Note: results usually arrive within ~3–10s; we poll with backoff up to ~30s.</p>
     </article>
   </main>
 
   <script>
-  const API = "https://api.whl.freshcuppa.wtf"; // your Worker
-  const worldsUrl = "/worlds-au-nz.json";       // hosted by Pages
-  const POLLING_INTERVAL_MS = 2500; // Polling interval in milliseconds
-  const MAX_POLL_ATTEMPTS = 4; // Maximum polling attempts for results
-  const el = (id) => {
-    const element = document.getElementById(id);
-    if (!element) {
-      throw new Error(`Element with id "${id}" not found`);
-    }
-    return element;
-  };
+  // ==== CONFIG ====
+  const API_BASE = "https://api.whl.freshcuppa.wtf";
+  const WORLDS_JSON = "/data/worlds-au-nz.json";
+  const MAX_WORLDS = 5;
+
+  const $ = (id) => document.getElementById(id);
+  const setStatus = (msg, cls="muted") => { const el=$("status"); el.textContent=msg; el.className=`mono ${cls}`; };
+
   async function loadWorlds(){
     try{
-      const r = await fetch(worldsUrl, {cache:"no-cache"});
+      const r = await fetch(WORLDS_JSON, {cache:"no-cache"});
+      if(!r.ok) throw new Error(`HTTP ${r.status}`);
       const list = await r.json();
-      const sel = el("world");
-      sel.innerHTML = "";
-        for(const w of list){
-          const opt = document.createElement("option");
-          opt.value = JSON.stringify({host:w.host, port:w.port||43594});
-          opt.textContent = `${w.name} — ${w.host}`;
-          sel.appendChild(opt);
-        }
-    } catch(e){
-      el("status").textContent = "Failed to load world list: " + (e && e.message ? e.message : e);
+      const wrap = $("worlds"); wrap.innerHTML = "";
+      list.forEach((w,i) => {
+        const id = `w_${i}`;
+        const div = document.createElement("label");
+        div.innerHTML = `<input type="checkbox" id="${id}" value="${encodeURIComponent(JSON.stringify(w))}"> ${w.name} <span class="muted">(${w.host})</span>`;
+        wrap.appendChild(div);
+      });
+    }catch(e){
+      setStatus(`Failed to load world list: ${e.message||e}`, "error");
     }
   }
 
-  async function runTest(evt){
-    evt.preventDefault();
-    el("status").textContent = "Selecting probe...";
-    const asn = Number(el("asn").value);
-    const capital = el("capital").value;
-    const worldObj = JSON.parse(el("world").value);
-    const tcpPort = Number(el("port").value)||43594;
-
-    // Step 1: probe
-    const pr = await fetch(`${API}/probes?asn=${asn}&capital=${encodeURIComponent(capital)}`);
-    const probe = await pr.json();
-    if(probe.error){ el("status").textContent = "Probe select failed: " + probe.error; return; }
-    const probeId = probe.probe?.id;
-    el("status").textContent = `Probe ${probeId} selected; starting measurements...`;
-
-    // Step 2: measure
-    const body = { asn, capital, worlds: [worldObj.host], tcp_port: tcpPort };
-    const mr = await fetch(`${API}/measure`, { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify(body) });
-    const meas = await mr.json();
-    if(!mr.ok){ el("status").textContent = "Measure failed: " + JSON.stringify(meas); return; }
-
-    const runId = meas.run_id;
-    el("status").textContent = `Run ${runId} created; waiting for results...`;
-
-    // Step 3: poll results a couple of times
-    const tbody = document.querySelector("#table tbody");
-    tbody.innerHTML = "";
-      await new Promise(r=>setTimeout(r, POLLING_INTERVAL_MS));
-      await new Promise(r=>setTimeout(r, 2500));
-      const rr = await fetch(`${API}/results?run=${encodeURIComponent(runId)}`);
-      const res = await rr.json();
-
-      if(Array.isArray(res?.results) && res.results.length){
-        const r0 = res.results[0];
-        tbody.innerHTML = `
-          <tr>
-            <td>${r0.world}</td>
-            <td>${res.probe_id}</td>
-            <td>${r0.ping?.rtt_med ?? "—"}</td>
-            <td>${r0.ping?.rtt_p95 ?? "—"}</td>
-            <td>${r0.ping?.jitter ?? "—"}</td>
-            <td>${r0.ping?.loss_pct ?? "—"}</td>
-            <td>${r0.traceroute?.hops ?? "—"}</td>
-            <td>${r0.traceroute?.final_hop_rtt ?? "—"}</td>
-          </tr>`;
-        el("status").textContent = "Done.";
-        return;
-      }
-      el("status").textContent = `Waiting for results... (attempt 1/4)`;
-    el("status").textContent = "Timed out waiting for results.";
+  async function selectProbe(asn, capital){
+    const url = `${API_BASE}/probes?asn=${encodeURIComponent(asn)}&capital=${encodeURIComponent(capital)}`;
+    const r = await fetch(url);
+    const j = await r.json().catch(()=>({error:"bad_json"}));
+    if(!r.ok || j.error) throw new Error(j.error || `probe_http_${r.status}`);
+    return j.probe.id;
   }
 
+  async function createMeasurement(asn, capital, worlds, port){
+    const body = JSON.stringify({ asn, capital, worlds, tcp_port: port });
+    const r = await fetch(`${API_BASE}/measure`, { method:"POST", headers:{ "content-type":"application/json" }, body });
+    const j = await r.json().catch(()=>({error:"bad_json"}));
+    if(!r.ok || j.error) throw new Error(j.error || `measure_http_${r.status}`);
+    return j.run_id;
+  }
+
+  async function fetchResults(runId){
+    const r = await fetch(`${API_BASE}/results?run=${encodeURIComponent(runId)}`);
+    if(!r.ok) return null;
+    const j = await r.json().catch(()=>null);
+    if(!j || !Array.isArray(j.results)) return null;
+    return j;
+  }
+
+  function renderResults(res){
+    const tb = $("tbody"); tb.innerHTML = "";
+    res.results.forEach(row=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${row.world}</td>
+        <td>${res.probe_id ?? "?"}</td>
+        <td>${row.ping?.rtt_med ?? "—"}</td>
+        <td>${row.ping?.rtt_p95 ?? "—"}</td>
+        <td>${row.ping?.jitter ?? "—"}</td>
+        <td>${row.ping?.loss_pct ?? "—"}</td>
+        <td>${row.traceroute?.hops ?? "—"}</td>
+        <td>${row.traceroute?.final_hop_rtt ?? "—"}</td>`;
+      tb.appendChild(tr);
+    });
+  }
+
+  $("runForm").addEventListener("submit", async (evt)=>{
+    evt.preventDefault();
+    const btn = $("runBtn"); btn.setAttribute("aria-busy", "true"); btn.disabled = true;
+    $("tbody").innerHTML = "";
+
+    try{
+      const asn = Number($("asn").value);
+      const capital = $("capital").value;
+      const port = Number($("port").value)||43594;
+
+      // collect worlds
+      const checks = [...document.querySelectorAll("#worlds input[type=checkbox]:checked")];
+      if(checks.length === 0) throw new Error("select_at_least_one_world");
+      if(checks.length > MAX_WORLDS) throw new Error(`max_${MAX_WORLDS}_worlds`);
+      const worlds = checks.map(c => JSON.parse(decodeURIComponent(c.value)).host);
+
+      setStatus("Selecting probe…");
+      await selectProbe(asn, capital); // primarily to fail fast; measure will also select as needed
+
+      setStatus("Creating measurements…");
+      const runId = await createMeasurement(asn, capital, worlds, port);
+      setStatus(`Run ${runId} created. Waiting for results…`);
+
+      // poll with gentle backoff ~30s total
+      const schedule = [2000, 2500, 3000, 4000, 5000, 6000, 7000];
+      for (let i=0;i<schedule.length;i++){
+        await new Promise(r=>setTimeout(r, schedule[i]));
+        const res = await fetchResults(runId);
+        if(res){
+          renderResults(res);
+          setStatus("Done.", "ok");
+          btn.removeAttribute("aria-busy"); btn.disabled = false;
+          return;
+        }
+        setStatus(`Waiting for results… (attempt ${i+1}/${schedule.length})`);
+      }
+      setStatus("Timed out waiting for results.", "error");
+    }catch(err){
+      setStatus(String(err.message || err), "error");
+    }finally{
+      btn.removeAttribute("aria-busy"); btn.disabled = false;
+    }
+  });
+
   loadWorlds();
-  document.getElementById("runForm").addEventListener("submit", runTest);
   </script>
 </body>
 </html>

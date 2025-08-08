@@ -1,7 +1,6 @@
-{
-  "metadata": { "ttl_minutes": 15 },
-  "worlds": [
-    { "id": "W301", "hostname": "world301.example.com", "region": "AU" }
-    // add more later; hostnames will be validated at runtime
-  ]
-}
+[
+  { "name": "World 569 (AUS)", "host": "oldschool269.runescape.com", "port": 43594 },
+  { "name": "World 570 (AUS)", "host": "oldschool270.runescape.com", "port": 43594 },
+  { "name": "World 571 (AUS)", "host": "oldschool271.runescape.com", "port": 43594 },
+  { "name": "World 301 (NZ sample)", "host": "world301.example.com", "port": 43594 }
+]
