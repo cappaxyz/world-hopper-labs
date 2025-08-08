@@ -4,349 +4,441 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>World Hopper Labs — AU/NZ</title>
-<link rel="icon" href="/favicon.ico" />
+<link rel="icon" href="favicon.ico" />
 <style>
   :root{
-    --bg:#0f1720; --panel:#121a24; --muted:#8aa0b2; --text:#e6edf3; --brand:#2b7fff;
-    --chip:#1f2937; --ok:#16a34a; --warn:#f59e0b; --err:#ef4444; --ring:rgba(59,130,246,.45);
-    --border:#1f2b39;
+    --bg:#0f1620; --panel:#121b26; --panel-2:#0d141d; --text:#e7eef6; --muted:#9fb3c8;
+    --accent:#1f6feb; --accent-2:#2483ff; --ok:#2ecc71; --warn:#f1c40f; --bad:#e74c3c;
+    --chip:#1b2735; --chip-border:#203044; --table:#0f1823;
   }
-  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial}
-  .wrap{max-width:1120px;margin:28px auto;padding:0 16px}
-  h1{margin:0 0 8px;font-size:28px} .sub{color:var(--muted);margin-bottom:18px}
-  .row{display:grid;gap:16px;grid-template-columns:1fr} @media(min-width:980px){.row{grid-template-columns:1fr 1fr}}
-  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px}
-  .card h3{margin:12px 12px 0;font-size:16px} .card .body{padding:12px}
-  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-  .select,.input{appearance:none;background:#0c121a;border:1px solid #223144;color:var(--text);border-radius:9px;padding:8px 10px}
-  .select:focus,.input:focus{outline:2px solid var(--ring)}
-  .tiny{font-size:12px;color:var(--muted)} .btn{background:var(--brand);color:#fff;border:0;border-radius:9px;padding:10px 14px;cursor:pointer}
-  .btn.secondary{background:#1f2a37;color:#e5e7eb} .btn:disabled{opacity:.6;cursor:default}
-  .danger{color:var(--err)} .muted{color:var(--muted)}
-  /* worlds grid */
-  .worlds{display:grid;gap:10px;grid-template-columns:1fr}
-  @media(min-width:740px){.worlds{grid-template-columns:repeat(2,1fr)}}
-  @media(min-width:1024px){.worlds{grid-template-columns:repeat(3,1fr)}}
-  .world{border:1px solid var(--border);border-radius:10px;padding:10px;background:#0f1720}
-  .world header{display:flex;gap:8px;align-items:center}
-  .world h4{margin:0;font-size:14px;flex:1}
-  .host{color:var(--muted);font-size:12px;margin-top:4px;word-break:break-all}
-  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-  .chip{font-size:11px;padding:2px 6px;border-radius:999px;background:var(--chip);color:#cbd5e1;border:1px solid #273241}
-  .chip.m{border-color:#1d3d2a;color:#a7f3d0;background:#0c1f17}
-  .chip.f{border-color:#47311e;color:#fde68a;background:#1a140b}
-  .row-actions{display:flex;gap:8px;margin-top:10px}
-  /* results */
-  table{width:100%;border-collapse:separate;border-spacing:0 8px}
-  th{color:#9fb2c4;text-align:left;padding:0 10px 4px}
-  td{background:#0f1720;padding:10px;border:1px solid var(--border)}
-  td:first-child{border-top-left-radius:8px;border-bottom-left-radius:8px}
-  td:last-child{border-top-right-radius:8px;border-bottom-right-radius:8px}
+  html,body{ background:var(--bg); color:var(--text); font:16px/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif; margin:0; }
+  .wrap{ max-width:1150px; margin:28px auto; padding:0 16px; }
+  h1{ font-size:28px; margin:0 0 6px; }
+  p.sub{ color:var(--muted); margin:0 0 22px; }
+  .grid{ display:grid; gap:18px; grid-template-columns: 1fr 1fr; }
+  .card{ background:var(--panel); border:1px solid #1b2634; border-radius:12px; padding:16px; }
+  .card h2{ margin:0 0 12px; font-size:18px; }
+  label.lbl{ display:block; color:var(--muted); font-size:12px; margin:10px 0 6px; }
+  select, input[type="text"]{ width:100%; background:var(--panel-2); color:var(--text);
+    border:1px solid #223246; border-radius:8px; padding:10px 12px; }
+  .row{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; }
+  .help{ color:var(--muted); font-size:12px; margin-top:8px; }
+  .note{ font-size:12px; color:var(--muted); }
+  .danger{ color:var(--bad); }
+  .ok{ color:var(--ok); }
+  .btn{ background:var(--accent); border:0; color:white; border-radius:10px; padding:10px 14px; cursor:pointer; }
+  .btn[disabled]{ opacity:.6; cursor:not-allowed; }
+  .btn.secondary{ background:#1a2636; }
+  .chips{ display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+  .chip{ background:var(--chip); border:1px solid var(--chip-border); color:var(--muted);
+    border-radius:999px; padding:3px 8px; font-size:12px; }
+  .worlds{ display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; }
+  .world{ background:var(--panel-2); border:1px solid #1c2a3c; border-radius:10px; padding:10px 12px; }
+  .world header{ display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  .world small{ color:var(--muted); }
+  .world .meta{ margin-top:6px; display:flex; gap:8px; flex-wrap:wrap; }
+  .world .select{ display:flex; align-items:center; gap:8px; margin-top:8px; }
+  .world .select input{ width:18px; height:18px; }
+  .divider{ height:1px; background:#1b2634; margin:18px 0; }
+  table{ width:100%; border-collapse:collapse; background:var(--table); border:1px solid #1b2634; border-radius:12px; overflow:hidden; }
+  thead th{ text-align:left; font-weight:600; font-size:13px; color:var(--muted); padding:10px 12px; background:#101a26; }
+  tbody td{ padding:10px 12px; border-top:1px solid #1b2634; }
+  .status{ font-size:12px; color:var(--muted); }
+  .toolbar{ display:flex; gap:10px; align-items:center; }
+  .right{ display:flex; justify-content:flex-end; }
+  .flex{ display:flex; align-items:center; gap:10px; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>World Hopper Labs — AU/NZ</h1>
-  <div class="sub">Quickly test RTT / loss and TCP traceroute from a RIPE Atlas probe near your ISP + city to OSRS worlds.</div>
+  <p class="sub">Quickly test RTT / loss and TCP traceroute from a RIPE Atlas probe near your ISP + city to OSRS worlds.</p>
 
-  <div class="row">
-    <!-- Left -->
-    <section class="card">
-      <h3>1) Choose network & region</h3>
-      <div class="body">
-        <div class="controls">
-          <div>
-            <div class="tiny">ISP (ASN)</div>
-            <select id="asn" class="select" style="min-width:260px"></select>
-          </div>
-          <div>
-            <div class="tiny">Closest city</div>
-            <select id="capital" class="select">
-              <option value="SYD">Sydney</option><option value="MEL" selected>Melbourne</option>
-              <option value="BNE">Brisbane</option><option value="ADL">Adelaide</option><option value="PER">Perth</option>
-              <option value="CBR">Canberra</option><option value="HBA">Hobart</option><option value="DRW">Darwin</option>
-              <option value="AKL">Auckland</option><option value="WLG">Wellington</option><option value="CHC">Christchurch</option>
-            </select>
-          </div>
-          <div>
-            <div class="tiny">Game port</div>
-            <select id="port" class="select"><option value="43594" selected>43594</option><option value="43595">43595</option></select>
-          </div>
+  <div class="grid">
+    <!-- Left: Network -->
+    <div class="card">
+      <h2>1) Choose network &amp; region</h2>
+      <div class="row">
+        <div>
+          <label class="lbl">ISP (ASN)</label>
+          <select id="asn"></select>
+          <div id="asnErr" class="danger help" style="display:none"></div>
         </div>
+        <div>
+          <label class="lbl">Closest city</label>
+          <select id="capital">
+            <option value="SYD">Sydney</option>
+            <option value="MEL" selected>Melbourne</option>
+            <option value="BNE">Brisbane</option>
+            <option value="ADL">Adelaide</option>
+            <option value="PER">Perth</option>
+            <option value="CBR">Canberra</option>
+            <option value="HBA">Hobart</option>
+            <option value="DRW">Darwin</option>
+            <option value="AKL">Auckland</option>
+            <option value="WLG">Wellington</option>
+            <option value="CHC">Christchurch</option>
+          </select>
+        </div>
+        <div>
+          <label class="lbl">Game port</label>
+          <select id="tcpPort">
+            <option value="43594" selected>43594</option>
+            <option value="43595">43595</option>
+          </select>
+        </div>
+      </div>
 
-        <label class="controls" style="gap:8px;margin-top:8px">
-          <input id="nocache" type="checkbox" /> <span class="tiny">Bypass probe cache (force fresh selection)</span>
+      <div class="flex" style="margin-top:10px;">
+        <label class="flex" title="Bypass cached probe selection for a fresh, nearest probe">
+          <input type="checkbox" id="bypassCache" /> Bypass probe cache (force fresh selection)
         </label>
-        <div class="tiny">API: <code id="apiSpan"></code></div>
-        <div id="asnErr" class="tiny danger" style="margin-top:6px;display:none"></div>
       </div>
-    </section>
+      <div class="help">CORS is limited to this Pages domain; your browser will call <code>https://api.whl.freshcuppa.wtf</code>.</div>
+    </div>
 
-    <!-- Right -->
-    <section class="card">
-      <h3>2) Pick worlds</h3>
-      <div class="body">
-        <div id="worldList" class="worlds"></div>
-        <div class="row-actions">
-          <button id="toggleWorldsBtn" class="btn secondary">Show all</button>
-          <button id="startBtn" class="btn">Start measurement</button>
-        </div>
-        <div id="worldErr" class="tiny danger" style="margin-top:8px;display:none"></div>
+    <!-- Right: Worlds -->
+    <div class="card">
+      <h2>2) Pick worlds</h2>
+      <div id="worlds" class="worlds"></div>
+      <div class="toolbar" style="margin-top:10px;">
+        <button id="toggleMore" class="btn secondary">Show all</button>
+        <div class="right" style="flex:1"></div>
+        <button id="startBtn" class="btn">Start measurement</button>
       </div>
-    </section>
+      <div class="help">Select up to 5 worlds.</div>
+    </div>
   </div>
 
-  <section class="card" style="margin-top:16px">
-    <h3>3) Results</h3>
-    <div class="body">
-      <table>
-        <thead>
-          <tr>
-            <th>World</th><th>Port</th><th>Members</th><th>Activity</th>
-            <th>Median RTT</th><th>p95 RTT</th><th>Jitter</th><th>Loss %</th>
-            <th>Hops</th><th>Final hop RTT</th><th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="resultsBody"></tbody>
-      </table>
-      <div class="tiny muted">Results usually arrive in ~3–15s; we poll with backoff up to ~75s.</div>
-    </div>
-  </section>
+  <div class="card" style="margin-top:18px;">
+    <h2>3) Results</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>World</th>
+          <th>Port</th>
+          <th>Members</th>
+          <th>Activity</th>
+          <th>Median RTT</th>
+          <th>p95 RTT</th>
+          <th>Jitter</th>
+          <th>Loss %</th>
+          <th>Hops</th>
+          <th>Final hop RTT</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="resultsBody"></tbody>
+    </table>
+    <div class="note" style="margin-top:8px;">Note: results usually arrive within ~3–15s; we poll with backoff up to ~75s.</div>
+  </div>
 </div>
 
 <script>
-  // ---------- config ----------
-  const API_BASE = (window.NEXT_PUBLIC_API_BASE || "").trim() || "https://api.whl.freshcuppa.wtf";
-  const ASNS_URL = "/asn-seeds.json";
-  const WORLDS_URL = "/worlds-au-nz.json";
-  document.getElementById("apiSpan").textContent = API_BASE;
+  // -------- Config --------
+  const API_BASE = "https://api.whl.freshcuppa.wtf";
+  const ASNS_URL = "asn-seeds.json";
+  const WORLDS_URL = "worlds-au-nz.json";
+  const MAX_WORLDS = 5;
+  const INITIAL_VISIBLE_WORLDS = 6;
 
-  // ---------- state ----------
+  // Data holders
   let allWorlds = [];
-  let selectedHosts = new Set();
   let showingAll = false;
 
-  // ---------- utils ----------
-  const $ = (q)=>document.querySelector(q);
-  const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
-  const fmt = (n,d=3)=> (n==null||Number.isNaN(n)) ? "—" : Number(n).toFixed(d);
-  const esc = (s)=> String(s).replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
-
-  function showErr(id, msg){ const el=$(id); if(!el) return; if(!msg){el.style.display="none";el.textContent="";} else {el.style.display="block";el.textContent=msg;} }
-
-  // ---------- load ISPs from asn-seeds.json (robust normalizer) ----------
+  // -------- ASN loader (handles AU/NZ object shape) --------
   async function loadASNs(){
     try{
-      const r = await fetch(ASNS_URL, {cache:"no-cache"});
+      const r = await fetch(ASNS_URL, { cache:"no-cache" });
       if(!r.ok) throw new Error(`HTTP ${r.status}`);
       const raw = await r.json();
 
-      // normalize to array of {asn,label}
-      let items = [];
-      if(Array.isArray(raw)) items = raw;
-      else if(raw && Array.isArray(raw.items)) items = raw.items;
-      else if(raw && typeof raw === "object"){
-        // mapping object -> convert to array
-        for(const [k,v] of Object.entries(raw)){
-          if(v && (typeof v === "object")){
-            items.push(v);
-          }else{
-            // string/number value (label or asn)
-            items.push({ label:k, asn:v });
+      const items = [];
+      const addArr = (arr, cc) => Array.isArray(arr) && arr.forEach(s => items.push({ ...s, cc }));
+      addArr(raw?.AU, "AU");
+      addArr(raw?.NZ, "NZ");
+
+      if(items.length === 0){
+        // fallbacks if file shape changes
+        if(Array.isArray(raw)) items.push(...raw);
+        else if(raw && Array.isArray(raw.items)) items.push(...raw.items);
+        else if(raw && typeof raw === "object"){
+          for(const [k,v] of Object.entries(raw)){
+            if(Array.isArray(v)) addArr(v, k.toUpperCase());
+            else if(v && typeof v === "object") items.push(v);
           }
         }
       }
 
-      const out = [];
+      const norm = [];
       for(const s of items){
         const asStr = (s.asn ?? s.ASN ?? s.id ?? s.number ?? s.as ?? "").toString();
         const asn = parseInt(asStr.replace(/^AS/i,""),10);
         if(!Number.isFinite(asn) || asn<=0) continue;
         const label = s.label ?? s.name ?? s.isp ?? s.org ?? `AS${asn}`;
         const cc = (s.cc ?? s.country ?? s.country_code ?? "").toString().toUpperCase();
-        out.push({asn,label,cc});
+        norm.push({ asn, label, cc });
       }
 
-      // unique by ASN + sort AU/NZ first then label
-      const map = new Map();
-      for(const x of out) if(!map.has(x.asn)) map.set(x.asn,x);
-      const list = Array.from(map.values()).sort((a,b)=>{
-        const ap = (a.cc==="AU"||a.cc==="NZ")?0:1;
-        const bp = (b.cc==="AU"||b.cc==="NZ")?0:1;
-        if(ap!==bp) return ap-bp;
-        return a.label.localeCompare(b.label);
-      });
+      // dedupe
+      const dedup = new Map();
+      norm.forEach(x => { if(!dedup.has(x.asn)) dedup.set(x.asn, x); });
+      const list = Array.from(dedup.values());
 
-      const sel = $("#asn");
+      const groups = {
+        AU: list.filter(x => x.cc === "AU").sort((a,b)=>a.label.localeCompare(b.label)),
+        NZ: list.filter(x => x.cc === "NZ").sort((a,b)=>a.label.localeCompare(b.label)),
+        OTHER: list.filter(x => x.cc !== "AU" && x.cc !== "NZ").sort((a,b)=>a.label.localeCompare(b.label)),
+      };
+
+      const sel = document.getElementById("asn");
       sel.innerHTML = "";
-      for(const x of list){
-        const opt = document.createElement("option");
-        opt.value = String(x.asn);
-        opt.textContent = x.label.includes("AS") ? x.label : `${x.label} (AS${x.asn})`;
-        sel.appendChild(opt);
+      const makeGroup = (label, arr) => {
+        if(!arr.length) return;
+        const og = document.createElement("optgroup");
+        og.label = label;
+        arr.forEach(x => {
+          const opt = document.createElement("option");
+          opt.value = String(x.asn);
+          opt.textContent = `${x.label} (AS${x.asn})`;
+          og.appendChild(opt);
+        });
+        sel.appendChild(og);
+      };
+
+      if(groups.AU.length || groups.NZ.length){
+        makeGroup("Australia", groups.AU);
+        makeGroup("New Zealand", groups.NZ);
+        makeGroup("Other", groups.OTHER);
+      } else {
+        list.sort((a,b)=>a.label.localeCompare(b.label)).forEach(x=>{
+          const opt = document.createElement("option");
+          opt.value = String(x.asn);
+          opt.textContent = `${x.label} (AS${x.asn})`;
+          sel.appendChild(opt);
+        });
       }
       if(!sel.options.length){
         const opt=document.createElement("option");
-        opt.value="1221"; opt.textContent="Telstra — AU (AS1221)"; sel.appendChild(opt);
+        opt.value="1221"; opt.textContent="Telstra — AU (AS1221)";
+        sel.appendChild(opt);
       }
-      showErr("#asnErr","");
+      document.getElementById("asnErr").style.display="none";
     }catch(err){
       console.error("ASN load failed:", err);
-      const sel=$("#asn"); sel.innerHTML="";
-      const opt=document.createElement("option"); opt.value="1221"; opt.textContent="Telstra — AU (AS1221)"; sel.appendChild(opt);
-      showErr("#asnErr","Failed to load ISP list; using fallback.");
+      const sel = document.getElementById("asn");
+      sel.innerHTML = "";
+      const opt=document.createElement("option");
+      opt.value="1221"; opt.textContent="Telstra — AU (AS1221)";
+      sel.appendChild(opt);
+      const e = document.getElementById("asnErr");
+      e.style.display="block";
+      e.textContent="Failed to load ISP list; using fallback.";
     }
   }
 
-  // ---------- worlds ----------
+  // -------- Worlds loader and renderer --------
   async function loadWorlds(){
-    const r = await fetch(WORLDS_URL, {cache:"no-cache"});
-    if(!r.ok){ failWorlds("Failed to load worlds list."); return; }
-    try{
-      allWorlds = await r.json();
-      if(!Array.isArray(allWorlds)) throw new Error("Invalid worlds JSON");
-      renderWorlds();
-      showErr("#worldErr","");
-    }catch(e){
-      failWorlds("Invalid worlds list.");
-    }
-  }
-  function failWorlds(msg){
-    allWorlds=[]; $("#worldList").innerHTML=""; showErr("#worldErr",msg);
+    const r = await fetch(WORLDS_URL, { cache:"no-cache" });
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    allWorlds = await r.json();
+    renderWorlds();
   }
 
   function renderWorlds(){
-    const box = $("#worldList");
-    box.innerHTML="";
-    const list = showingAll ? allWorlds : allWorlds.slice(0,6);
+    const container = document.getElementById("worlds");
+    container.innerHTML = "";
+    const visible = showingAll ? allWorlds : allWorlds.slice(0, INITIAL_VISIBLE_WORLDS);
 
-    list.forEach(w=>{
-      const card=document.createElement("div");
-      card.className="world";
-      card.dataset.host=w.host;
-
-      const checked = selectedHosts.has(w.host) ? "checked" : "";
-      card.innerHTML = `
+    visible.forEach((w, idx) => {
+      const el = document.createElement("div");
+      el.className = "world";
+      el.innerHTML = `
         <header>
-          <input type="checkbox" class="worldCheck" ${checked} />
-          <h4>${esc(w.name)}</h4>
+          <div>
+            <strong>${escapeHtml(w.name)}</strong><br/>
+            <small>${escapeHtml(w.host)} : ${w.port}</small>
+          </div>
+          <button class="btn secondary" data-select="${idx}">Select</button>
         </header>
-        <div class="host">${esc(w.host)}:${w.port ?? 43594}</div>
-        <div class="chips">
-          <span class="chip ${w.members?'m':'f'}">${w.members?'Members':'Free'}</span>
-          ${w.activity ? `<span class="chip">${esc(w.activity)}</span>` : ``}
+        <div class="meta">
+          <span class="chip">${w.members ? "Members" : "Free"}</span>
+          ${w.activity ? `<span class="chip">${escapeHtml(w.activity)}</span>` : ""}
+        </div>
+        <div class="select">
+          <input type="checkbox" data-check="${idx}" />
+          <small class="muted">Include in measurement</small>
         </div>
       `;
-      // interactions
-      const cb = card.querySelector(".worldCheck");
-      cb.addEventListener("change",()=>{
-        if(cb.checked) selectedHosts.add(w.host); else selectedHosts.delete(w.host);
-      });
-      card.addEventListener("click",(e)=>{
-        if(e.target.classList.contains("worldCheck")) return;
-        cb.checked=!cb.checked; cb.dispatchEvent(new Event("change"));
-      });
-
-      box.appendChild(card);
+      container.appendChild(el);
     });
 
-    $("#toggleWorldsBtn").textContent = showingAll ? "Show fewer" : `Show all (${allWorlds.length})`;
-  }
+    document.getElementById("toggleMore").textContent = showingAll ? "Show fewer" : `Show all (${allWorlds.length})`;
 
-  // ---------- results table ----------
-  function clearRows(){ $("#resultsBody").innerHTML=""; }
-  function addPendingRows(hosts){
-    const tb=$("#resultsBody");
-    hosts.forEach(h=>{
-      const w=allWorlds.find(x=>x.host===h) || {name:h,port:$("#port").value,members:true,activity:""};
-      const tr=document.createElement("tr"); tr.dataset.host=h;
-      tr.innerHTML=rowHtml(w,{status:"Queued"});
-      tb.appendChild(tr);
+    // Bind selects
+    container.querySelectorAll("[data-select]").forEach(btn=>{
+      btn.addEventListener("click", (e)=>{
+        const i = Number(btn.getAttribute("data-select"));
+        const box = container.querySelector(`[data-check="${i}"]`);
+        if(box){ box.checked = !box.checked; enforceMaxSelection(container); }
+      });
+    });
+    container.querySelectorAll('input[type="checkbox"][data-check]').forEach(chk=>{
+      chk.addEventListener("change", ()=> enforceMaxSelection(container));
     });
   }
-  function updateRow(host, data){
-    const tr = document.querySelector(`#resultsBody tr[data-host="${CSS.escape(host)}"]`);
-    if(!tr) return;
-    const w=allWorlds.find(x=>x.host===host) || {name:host,port:$("#port").value,members:true,activity:""};
-    tr.innerHTML=rowHtml(w,data);
-  }
-  function rowHtml(w,data){
-    const ping=data?.ping||{}, tr=data?.traceroute||{};
-    const status = data?.status || ((ping.samples>0 || tr.hops)? "Done":"Pending");
-    return `
-      <td>${esc(w.name)}</td>
-      <td>${w.port ?? $("#port").value}</td>
-      <td>${w.members?"Yes":"No"}</td>
-      <td>${w.activity?esc(w.activity):"—"}</td>
-      <td>${fmt(ping.rtt_med)}</td>
-      <td>${fmt(ping.rtt_p95)}</td>
-      <td>${fmt(ping.jitter)}</td>
-      <td>${ping.loss_pct==null?"—":fmt(ping.loss_pct,2)}</td>
-      <td>${tr.hops ?? "—"}</td>
-      <td>${fmt(tr.final_hop_rtt)}</td>
-      <td>${status}</td>
-    `;
+
+  function enforceMaxSelection(container){
+    const all = Array.from(container.querySelectorAll('input[type="checkbox"][data-check]'));
+    const selected = all.filter(x=>x.checked);
+    if(selected.length > MAX_WORLDS){
+      // uncheck the newest tick
+      const last = selected.pop();
+      last.checked = false;
+      alert(`You can select up to ${MAX_WORLDS} worlds.`);
+    }
   }
 
-  // ---------- measurement & polling ----------
-  function chosenWorlds(){
-    const sel = allWorlds.filter(w=>selectedHosts.has(w.host));
-    return sel.length?sel:(allWorlds[0]?[allWorlds[0]]:[]);
+  // -------- Measurement + polling --------
+  function worldKey(w){ return `${w.host}:${w.port}`; }
+
+  function resetResultsTable(worlds){
+    const body = document.getElementById("resultsBody");
+    body.innerHTML = "";
+    worlds.forEach(w=>{
+      const tr = document.createElement("tr");
+      tr.id = `row-${worldKey(w)}`;
+      tr.innerHTML = `
+        <td>${escapeHtml(w.host)}</td>
+        <td>${w.port}</td>
+        <td>${w.members ? "Members" : "Free"}</td>
+        <td>${w.activity ? escapeHtml(w.activity) : ""}</td>
+        <td id="med-${worldKey(w)}">—</td>
+        <td id="p95-${worldKey(w)}">—</td>
+        <td id="jit-${worldKey(w)}">—</td>
+        <td id="los-${worldKey(w)}">—</td>
+        <td id="hop-${worldKey(w)}">—</td>
+        <td id="fhr-${worldKey(w)}">—</td>
+        <td class="status" id="st-${worldKey(w)}">queued…</td>
+      `;
+      body.appendChild(tr);
+    });
   }
 
   async function startMeasurement(){
-    const worlds = chosenWorlds().map(w=>w.host);
-    if(!worlds.length){ showErr("#worldErr","Pick at least one world."); return; }
-    showErr("#worldErr","");
+    const asn = document.getElementById("asn").value;
+    const capital = document.getElementById("capital").value;
+    const port = Number(document.getElementById("tcpPort").value);
+    const bypass = document.getElementById("bypassCache").checked;
 
-    const body = {
-      asn: parseInt($("#asn").value,10),
-      capital: $("#capital").value,
-      worlds,
-      tcp_port: parseInt($("#port").value,10)
-    };
-    const nocache = $("#nocache").checked ? "?nocache=1" : "";
+    // Gather selected
+    const container = document.getElementById("worlds");
+    const checks = Array.from(container.querySelectorAll('input[type="checkbox"][data-check]'));
+    const chosenIdx = checks.filter(x=>x.checked).map(x=>Number(x.getAttribute("data-check")));
 
-    $("#startBtn").disabled=true;
-    clearRows(); addPendingRows(worlds);
+    // Map from current visible slice indexes to allWorlds indexes
+    const visibleMap = showingAll ? allWorlds.map((_,i)=>i) : allWorlds.slice(0, INITIAL_VISIBLE_WORLDS).map((_,i)=>i);
+    const selectedWorlds = chosenIdx.map(i => allWorlds[visibleMap[i]]);
+
+    if(selectedWorlds.length === 0){ alert("Pick at least one world."); return; }
+    if(selectedWorlds.length > MAX_WORLDS){ alert(`Max ${MAX_WORLDS} worlds.`); return; }
+
+    resetResultsTable(selectedWorlds);
 
     try{
-      const r = await fetch(`${API_BASE}/measure${nocache}`,{
-        method:"POST", headers:{ "content-type":"application/json" }, body:JSON.stringify(body)
+      const body = {
+        asn: Number(asn),
+        capital,
+        worlds: selectedWorlds.map(w=>w.host),
+        tcp_port: port
+      };
+      const url = `${API_BASE}/measure${bypass ? "?nocache=1" : ""}`;
+      const r = await fetch(url, {
+        method:"POST",
+        headers:{ "content-type":"application/json" },
+        body: JSON.stringify(body)
       });
-      if(!r.ok){ throw new Error(`measure ${r.status}`); }
-      const j = await r.json();
-      await pollResults(j.run_id);
-    }catch(e){
-      showErr("#worldErr",`Failed to start measurement: ${e.message}`);
-      console.error(e);
-    }finally{
-      $("#startBtn").disabled=false;
+      if(!r.ok){
+        const txt = await r.text().catch(()=> "");
+        throw new Error(`Measure failed: HTTP ${r.status} ${txt}`);
+      }
+      const data = await r.json();
+      // Poll for results
+      await pollResults(data.run_id, selectedWorlds);
+    }catch(err){
+      console.error(err);
+      alert(`Failed to start measurement.\n\n${err.message || err}`);
     }
   }
 
-  async function pollResults(runId){
-    const waits=[2000,2000,2000,3000,3000,5000,7000,10000,15000,20000];
-    for(let i=0;i<waits.length;i++){
-      await sleep(waits[i]);
+  async function pollResults(runId, worlds){
+    const statusByKey = Object.fromEntries(worlds.map(w=>[worldKey(w),"waiting…"]));
+    const bodyEl = document.getElementById("resultsBody");
+
+    const sleep = ms => new Promise(r=>setTimeout(r,ms));
+    const attempts = 15;
+    let delay = 2000;
+
+    for(let i=0;i<attempts;i++){
       try{
-        const r = await fetch(`${API_BASE}/results?run=${encodeURIComponent(runId)}`,{cache:"no-cache"});
-        if(!r.ok) continue;
-        const j = await r.json();
-        const list=j.results||[];
-        for(const item of list){
-          updateRow(item.world,{ping:item.ping,traceroute:item.traceroute,status:(item.ping?.samples>0||item.traceroute?.hops)?"Done":"Pending"});
+        const r = await fetch(`${API_BASE}/results?run=${encodeURIComponent(runId)}`, { cache:"no-cache" });
+        if(r.ok){
+          const data = await r.json();
+          const rows = data?.results || [];
+          for(const row of rows){
+            const key = `${row.world}:${data.port ?? row.port ?? ""}`;
+            const ping = row.ping || {};
+            const tr = row.traceroute || {};
+            setCell(`med-${key}`, fmtNum(ping.rtt_med));
+            setCell(`p95-${key}`, fmtNum(ping.rtt_p95));
+            setCell(`jit-${key}`, fmtNum(ping.jitter));
+            setCell(`los-${key}`, fmtPct(ping.loss_pct));
+            setCell(`hop-${key}`, tr.hops ?? "—");
+            setCell(`fhr-${key}`, fmtNum(tr.final_hop_rtt));
+            setCell(`st-${key}`, ping.samples>0 || tr.hops!=null ? "done" : "waiting…");
+          }
+
+          // All done?
+          const done = rows.every(r =>
+            (r.ping && r.ping.samples>0) ||
+            (r.traceroute && r.traceroute.hops!=null)
+          );
+          if(done) return;
+        } else {
+          console.warn("results:", r.status);
         }
-        if(list.length && list.every(x => (x.ping?.samples>0) || (x.traceroute?.hops))) break;
-      }catch{}
+      }catch(e){ console.warn("poll error", e); }
+
+      await sleep(delay);
+      delay = Math.min(Math.round(delay*1.4), 8000);
     }
+
+    // timeout marker
+    worlds.forEach(w=>{
+      const key = worldKey(w);
+      const st = document.getElementById(`st-${key}`);
+      if(st && /waiting/.test(st.textContent)) st.textContent = "timeout";
+    });
   }
 
-  // ---------- init ----------
-  (async function(){
+  function setCell(id, val){
+    const el = document.getElementById(id);
+    if(el) el.textContent = (val==null ? "—" : val);
+  }
+  function fmtNum(n){ return (typeof n==="number" ? n.toFixed(3) : "—"); }
+  function fmtPct(n){ return (typeof n==="number" ? n.toFixed(2) : "—"); }
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
+
+  // -------- UI events --------
+  document.getElementById("toggleMore").addEventListener("click", ()=>{
+    showingAll = !showingAll;
+    renderWorlds();
+  });
+  document.getElementById("startBtn").addEventListener("click", startMeasurement);
+
+  // -------- Init --------
+  (async function init(){
     await Promise.all([loadASNs(), loadWorlds()]);
-    $("#toggleWorldsBtn").addEventListener("click", ()=>{ showingAll=!showingAll; renderWorlds(); });
-    $("#startBtn").addEventListener("click", startMeasurement);
   })();
 </script>
 </body>
