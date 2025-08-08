@@ -7,50 +7,41 @@
 <link rel="icon" href="/favicon.ico" />
 <style>
   :root{
-    --bg:#0f1720; --panel:#121a24; --muted:#8aa0b2; --text:#e6edf3; --brand:#2b7fff; --chip:#1f2937; --ok:#16a34a; --warn:#f59e0b; --err:#ef4444;
-    --ring: rgba(59,130,246,.45);
+    --bg:#0f1720; --panel:#121a24; --muted:#8aa0b2; --text:#e6edf3; --brand:#2b7fff;
+    --chip:#1f2937; --ok:#16a34a; --warn:#f59e0b; --err:#ef4444; --ring:rgba(59,130,246,.45);
+    --border:#1f2b39;
   }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-  a{color:var(--brand);text-decoration:none}
-  .wrap{max-width:1100px;margin:28px auto;padding:0 16px}
-  h1{font-size:28px;margin:0 0 8px}
-  .sub{color:var(--muted);margin-bottom:18px}
-  .row{display:grid;grid-template-columns:1fr;gap:16px}
-  @media (min-width:980px){ .row{grid-template-columns:1fr 1fr} }
-  .card{background:var(--panel);border:1px solid #202c39;border-radius:12px;box-shadow:0 0 0 1px rgba(255,255,255,.02) inset}
-  .card h3{margin:12px 12px 0 12px;font-size:16px}
-  .card .body{padding:12px}
-  .grid{display:grid;gap:10px}
-  /* Worlds: 3 columns on wide screens */
-  .worlds{grid-template-columns:1fr}
-  @media(min-width:740px){ .worlds{grid-template-columns:repeat(2,1fr)} }
-  @media(min-width:1024px){ .worlds{grid-template-columns:repeat(3,1fr)} }
-  .world{border:1px solid #233244;border-radius:10px;padding:10px;background:#0f1720}
-  .world header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-  .world h4{margin:0;font-size:14px}
-  .host{color:var(--muted);font-size:12px;word-break:break-all}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  .wrap{max-width:1120px;margin:28px auto;padding:0 16px}
+  h1{margin:0 0 8px;font-size:28px} .sub{color:var(--muted);margin-bottom:18px}
+  .row{display:grid;gap:16px;grid-template-columns:1fr} @media(min-width:980px){.row{grid-template-columns:1fr 1fr}}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px}
+  .card h3{margin:12px 12px 0;font-size:16px} .card .body{padding:12px}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .select,.input{appearance:none;background:#0c121a;border:1px solid #223144;color:var(--text);border-radius:9px;padding:8px 10px}
+  .select:focus,.input:focus{outline:2px solid var(--ring)}
+  .tiny{font-size:12px;color:var(--muted)} .btn{background:var(--brand);color:#fff;border:0;border-radius:9px;padding:10px 14px;cursor:pointer}
+  .btn.secondary{background:#1f2a37;color:#e5e7eb} .btn:disabled{opacity:.6;cursor:default}
+  .danger{color:var(--err)} .muted{color:var(--muted)}
+  /* worlds grid */
+  .worlds{display:grid;gap:10px;grid-template-columns:1fr}
+  @media(min-width:740px){.worlds{grid-template-columns:repeat(2,1fr)}}
+  @media(min-width:1024px){.worlds{grid-template-columns:repeat(3,1fr)}}
+  .world{border:1px solid var(--border);border-radius:10px;padding:10px;background:#0f1720}
+  .world header{display:flex;gap:8px;align-items:center}
+  .world h4{margin:0;font-size:14px;flex:1}
+  .host{color:var(--muted);font-size:12px;margin-top:4px;word-break:break-all}
   .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
   .chip{font-size:11px;padding:2px 6px;border-radius:999px;background:var(--chip);color:#cbd5e1;border:1px solid #273241}
   .chip.m{border-color:#1d3d2a;color:#a7f3d0;background:#0c1f17}
   .chip.f{border-color:#47311e;color:#fde68a;background:#1a140b}
-  .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .select, .input{appearance:none;background:#0c121a;border:1px solid #223144;color:var(--text);border-radius:9px;padding:8px 10px}
-  .select:focus, .input:focus{outline:2px solid var(--ring);outline-offset:0}
-  .btn{background:var(--brand);color:#fff;border:0;border-radius:9px;padding:10px 14px;cursor:pointer}
-  .btn.secondary{background:#1f2a37;color:#e5e7eb}
-  .btn:disabled{opacity:.6;cursor:default}
-  .muted{color:var(--muted)}
-  .danger{color:var(--err)}
-  .success{color:var(--ok)}
-  .table{width:100%;border-collapse:separate;border-spacing:0 8px}
-  .table th{color:#9fb2c4;font-weight:600;text-align:left;padding:0 10px 4px 10px}
-  .table td{background:#0f1720;padding:10px;border:1px solid #1f2b39}
-  .table td:first-child{border-top-left-radius:8px;border-bottom-left-radius:8px}
-  .table td:last-child{border-top-right-radius:8px;border-bottom-right-radius:8px}
-  .badge{font-size:11px;padding:2px 6px;border-radius:999px;border:1px dashed #2a3a4f;color:#a7b8c9}
   .row-actions{display:flex;gap:8px;margin-top:10px}
-  .tiny{font-size:12px}
+  /* results */
+  table{width:100%;border-collapse:separate;border-spacing:0 8px}
+  th{color:#9fb2c4;text-align:left;padding:0 10px 4px}
+  td{background:#0f1720;padding:10px;border:1px solid var(--border)}
+  td:first-child{border-top-left-radius:8px;border-bottom-left-radius:8px}
+  td:last-child{border-top-right-radius:8px;border-bottom-right-radius:8px}
 </style>
 </head>
 <body>
@@ -59,53 +50,43 @@
   <div class="sub">Quickly test RTT / loss and TCP traceroute from a RIPE Atlas probe near your ISP + city to OSRS worlds.</div>
 
   <div class="row">
-    <!-- Left: Network -->
+    <!-- Left -->
     <section class="card">
       <h3>1) Choose network & region</h3>
-      <div class="body grid" style="grid-template-columns:1fr;gap:12px">
+      <div class="body">
         <div class="controls">
           <div>
-            <div class="tiny muted">ISP (ASN)</div>
-            <select id="asn" class="select" style="min-width:240px"></select>
+            <div class="tiny">ISP (ASN)</div>
+            <select id="asn" class="select" style="min-width:260px"></select>
           </div>
           <div>
-            <div class="tiny muted">Closest city</div>
+            <div class="tiny">Closest city</div>
             <select id="capital" class="select">
-              <option value="SYD">Sydney</option>
-              <option value="MEL" selected>Melbourne</option>
-              <option value="BNE">Brisbane</option>
-              <option value="ADL">Adelaide</option>
-              <option value="PER">Perth</option>
-              <option value="CBR">Canberra</option>
-              <option value="HBA">Hobart</option>
-              <option value="DRW">Darwin</option>
-              <option value="AKL">Auckland</option>
-              <option value="WLG">Wellington</option>
-              <option value="CHC">Christchurch</option>
+              <option value="SYD">Sydney</option><option value="MEL" selected>Melbourne</option>
+              <option value="BNE">Brisbane</option><option value="ADL">Adelaide</option><option value="PER">Perth</option>
+              <option value="CBR">Canberra</option><option value="HBA">Hobart</option><option value="DRW">Darwin</option>
+              <option value="AKL">Auckland</option><option value="WLG">Wellington</option><option value="CHC">Christchurch</option>
             </select>
           </div>
           <div>
-            <div class="tiny muted">Game port</div>
-            <select id="port" class="select">
-              <option value="43594" selected>43594</option>
-              <option value="43595">43595</option>
-            </select>
+            <div class="tiny">Game port</div>
+            <select id="port" class="select"><option value="43594" selected>43594</option><option value="43595">43595</option></select>
           </div>
         </div>
 
-        <label class="controls" style="gap:6px">
-          <input id="nocache" type="checkbox" />
-          <span class="tiny">Bypass probe cache (force fresh selection)</span>
+        <label class="controls" style="gap:8px;margin-top:8px">
+          <input id="nocache" type="checkbox" /> <span class="tiny">Bypass probe cache (force fresh selection)</span>
         </label>
-        <div class="tiny muted">CORS is limited to this Pages domain; your browser will call <code id="apiSpan"></code>.</div>
+        <div class="tiny">API: <code id="apiSpan"></code></div>
+        <div id="asnErr" class="tiny danger" style="margin-top:6px;display:none"></div>
       </div>
     </section>
 
-    <!-- Right: Worlds -->
+    <!-- Right -->
     <section class="card">
       <h3>2) Pick worlds</h3>
       <div class="body">
-        <div id="worldList" class="worlds grid"></div>
+        <div id="worldList" class="worlds"></div>
         <div class="row-actions">
           <button id="toggleWorldsBtn" class="btn secondary">Show all</button>
           <button id="startBtn" class="btn">Start measurement</button>
@@ -115,11 +96,10 @@
     </section>
   </div>
 
-  <!-- Results -->
   <section class="card" style="margin-top:16px">
     <h3>3) Results</h3>
     <div class="body">
-      <table class="table" id="resultsTable">
+      <table>
         <thead>
           <tr>
             <th>World</th><th>Port</th><th>Members</th><th>Activity</th>
@@ -129,263 +109,244 @@
         </thead>
         <tbody id="resultsBody"></tbody>
       </table>
-      <div class="tiny muted">Note: results usually arrive within ~3–15s; we poll with backoff up to ~75s.</div>
+      <div class="tiny muted">Results usually arrive in ~3–15s; we poll with backoff up to ~75s.</div>
     </div>
   </section>
 </div>
 
 <script>
-  // ===== Config =====
-  const API_BASE   = (window.NEXT_PUBLIC_API_BASE || "").trim() || "https://api.whl.freshcuppa.wtf";
-  const ASNS_JSON  = "/asn-seeds.json";
-  const WORLDS_JSON= "/worlds-au-nz.json";
+  // ---------- config ----------
+  const API_BASE = (window.NEXT_PUBLIC_API_BASE || "").trim() || "https://api.whl.freshcuppa.wtf";
+  const ASNS_URL = "/asn-seeds.json";
+  const WORLDS_URL = "/worlds-au-nz.json";
   document.getElementById("apiSpan").textContent = API_BASE;
 
-  // ===== State =====
+  // ---------- state ----------
   let allWorlds = [];
-  let showingAll = false;
   let selectedHosts = new Set();
+  let showingAll = false;
 
-  // ===== Helpers =====
+  // ---------- utils ----------
+  const $ = (q)=>document.querySelector(q);
   const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
-  const el = (q)=>document.querySelector(q);
+  const fmt = (n,d=3)=> (n==null||Number.isNaN(n)) ? "—" : Number(n).toFixed(d);
+  const esc = (s)=> String(s).replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
 
-  function fmt(n, digits=3){
-    if(n==null || Number.isNaN(n)) return "—";
-    return Number(n).toFixed(digits);
-  }
+  function showErr(id, msg){ const el=$(id); if(!el) return; if(!msg){el.style.display="none";el.textContent="";} else {el.style.display="block";el.textContent=msg;} }
 
-  // ===== ASN loader (robust to any shape) =====
+  // ---------- load ISPs from asn-seeds.json (robust normalizer) ----------
   async function loadASNs(){
     try{
-      const r = await fetch(ASNS_JSON, {cache:"no-cache"});
-      if(!r.ok) throw new Error(`asn-seeds fetch ${r.status}`);
+      const r = await fetch(ASNS_URL, {cache:"no-cache"});
+      if(!r.ok) throw new Error(`HTTP ${r.status}`);
       const raw = await r.json();
 
-      // Normalize to array
-      let seeds = [];
-      if(Array.isArray(raw)) seeds = raw;
-      else if(Array.isArray(raw.items)) seeds = raw.items;
-      else if(raw && typeof raw === "object") seeds = Object.values(raw);
-
-      const normalized = [];
-      for(const s of seeds){
-        const asStr = String(s.asn ?? s.ASN ?? s.as ?? s.number ?? s.id ?? "").trim();
-        const asn = parseInt(asStr.replace(/^AS/i,""),10);
-        if(!Number.isFinite(asn) || asn<=0) continue;
-        const label = s.label ?? s.name ?? s.isp ?? s.org ?? s.provider ?? `AS${asn}`;
-        const cc = (s.cc ?? s.country ?? s.country_code ?? "").toString().toUpperCase();
-        normalized.push({ asn, label, cc });
+      // normalize to array of {asn,label}
+      let items = [];
+      if(Array.isArray(raw)) items = raw;
+      else if(raw && Array.isArray(raw.items)) items = raw.items;
+      else if(raw && typeof raw === "object"){
+        // mapping object -> convert to array
+        for(const [k,v] of Object.entries(raw)){
+          if(v && (typeof v === "object")){
+            items.push(v);
+          }else{
+            // string/number value (label or asn)
+            items.push({ label:k, asn:v });
+          }
+        }
       }
 
-      // Unique by ASN
-      const map = new Map();
-      for(const n of normalized) if(!map.has(n.asn)) map.set(n.asn,n);
-      const list = Array.from(map.values());
+      const out = [];
+      for(const s of items){
+        const asStr = (s.asn ?? s.ASN ?? s.id ?? s.number ?? s.as ?? "").toString();
+        const asn = parseInt(asStr.replace(/^AS/i,""),10);
+        if(!Number.isFinite(asn) || asn<=0) continue;
+        const label = s.label ?? s.name ?? s.isp ?? s.org ?? `AS${asn}`;
+        const cc = (s.cc ?? s.country ?? s.country_code ?? "").toString().toUpperCase();
+        out.push({asn,label,cc});
+      }
 
-      // AU/NZ to top
-      list.sort((a,b)=>{
-        const ap=(a.cc==="AU"||a.cc==="NZ")?0:1;
-        const bp=(b.cc==="AU"||b.cc==="NZ")?0:1;
+      // unique by ASN + sort AU/NZ first then label
+      const map = new Map();
+      for(const x of out) if(!map.has(x.asn)) map.set(x.asn,x);
+      const list = Array.from(map.values()).sort((a,b)=>{
+        const ap = (a.cc==="AU"||a.cc==="NZ")?0:1;
+        const bp = (b.cc==="AU"||b.cc==="NZ")?0:1;
         if(ap!==bp) return ap-bp;
         return a.label.localeCompare(b.label);
       });
 
-      populateASNOptions(list);
-      console.log(`[ASN] loaded unique=${list.length}`);
-    }catch(e){
-      console.error("ASN load failed:", e);
-      populateASNOptions([{asn:1221,label:"Telstra — AU (AS1221)"}]);
+      const sel = $("#asn");
+      sel.innerHTML = "";
+      for(const x of list){
+        const opt = document.createElement("option");
+        opt.value = String(x.asn);
+        opt.textContent = x.label.includes("AS") ? x.label : `${x.label} (AS${x.asn})`;
+        sel.appendChild(opt);
+      }
+      if(!sel.options.length){
+        const opt=document.createElement("option");
+        opt.value="1221"; opt.textContent="Telstra — AU (AS1221)"; sel.appendChild(opt);
+      }
+      showErr("#asnErr","");
+    }catch(err){
+      console.error("ASN load failed:", err);
+      const sel=$("#asn"); sel.innerHTML="";
+      const opt=document.createElement("option"); opt.value="1221"; opt.textContent="Telstra — AU (AS1221)"; sel.appendChild(opt);
+      showErr("#asnErr","Failed to load ISP list; using fallback.");
     }
   }
 
-  function populateASNOptions(list){
-    const asnSel = el("#asn");
-    asnSel.innerHTML = "";
-    for(const item of list){
-      const opt = document.createElement("option");
-      opt.value = String(item.asn);
-      opt.textContent = item.label.includes("AS") ? item.label : `${item.label} (AS${item.asn})`;
-      asnSel.appendChild(opt);
-    }
-    if(!asnSel.options.length){
-      const opt = document.createElement("option");
-      opt.value = "1221";
-      opt.textContent = "Telstra — AU (AS1221)";
-      asnSel.appendChild(opt);
-    }
-  }
-
-  // ===== Worlds =====
+  // ---------- worlds ----------
   async function loadWorlds(){
-    const r = await fetch(WORLDS_JSON, {cache:"no-cache"});
-    if(!r.ok) throw new Error("worlds list fetch failed");
-    allWorlds = await r.json();
-    renderWorlds();
+    const r = await fetch(WORLDS_URL, {cache:"no-cache"});
+    if(!r.ok){ failWorlds("Failed to load worlds list."); return; }
+    try{
+      allWorlds = await r.json();
+      if(!Array.isArray(allWorlds)) throw new Error("Invalid worlds JSON");
+      renderWorlds();
+      showErr("#worldErr","");
+    }catch(e){
+      failWorlds("Invalid worlds list.");
+    }
+  }
+  function failWorlds(msg){
+    allWorlds=[]; $("#worldList").innerHTML=""; showErr("#worldErr",msg);
   }
 
   function renderWorlds(){
-    const container = el("#worldList");
-    container.innerHTML = "";
+    const box = $("#worldList");
+    box.innerHTML="";
     const list = showingAll ? allWorlds : allWorlds.slice(0,6);
 
-    for(const w of list){
-      const card = document.createElement("div");
+    list.forEach(w=>{
+      const card=document.createElement("div");
       card.className="world";
-      card.dataset.host = w.host;
+      card.dataset.host=w.host;
 
+      const checked = selectedHosts.has(w.host) ? "checked" : "";
       card.innerHTML = `
         <header>
-          <input type="checkbox" class="worldCheck" ${selectedHosts.has(w.host)?'checked':''} />
-          <h4>${w.name}</h4>
-          <span style="margin-left:auto" class="tiny muted">Select</span>
+          <input type="checkbox" class="worldCheck" ${checked} />
+          <h4>${esc(w.name)}</h4>
         </header>
-        <div class="host">${w.host}:${w.port}</div>
+        <div class="host">${esc(w.host)}:${w.port ?? 43594}</div>
         <div class="chips">
-          <span class="chip ${w.members ? 'm' : 'f'}">${w.members ? 'Members' : 'Free'}</span>
-          ${w.activity ? `<span class="chip">${escapeHtml(w.activity)}</span>` : ``}
+          <span class="chip ${w.members?'m':'f'}">${w.members?'Members':'Free'}</span>
+          ${w.activity ? `<span class="chip">${esc(w.activity)}</span>` : ``}
         </div>
       `;
-      container.appendChild(card);
-    }
-
-    // Hook up selection
-    container.querySelectorAll(".world").forEach(div=>{
-      const host = div.dataset.host;
-      const cb = div.querySelector(".worldCheck");
+      // interactions
+      const cb = card.querySelector(".worldCheck");
       cb.addEventListener("change",()=>{
-        if(cb.checked) selectedHosts.add(host); else selectedHosts.delete(host);
+        if(cb.checked) selectedHosts.add(w.host); else selectedHosts.delete(w.host);
       });
-      // clicking the card toggles cb (except checkbox itself)
-      div.addEventListener("click",(e)=>{
-        if(e.target.tagName.toLowerCase()==="input") return;
-        cb.checked = !cb.checked;
-        cb.dispatchEvent(new Event("change"));
+      card.addEventListener("click",(e)=>{
+        if(e.target.classList.contains("worldCheck")) return;
+        cb.checked=!cb.checked; cb.dispatchEvent(new Event("change"));
       });
+
+      box.appendChild(card);
     });
 
-    el("#toggleWorldsBtn").textContent = showingAll ? `Show fewer` : `Show all (${allWorlds.length})`;
+    $("#toggleWorldsBtn").textContent = showingAll ? "Show fewer" : `Show all (${allWorlds.length})`;
   }
 
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
-  }
-
-  // ===== Measure + Poll =====
-  function selectedWorlds(){
-    // Use user selection, otherwise auto-pick first one
-    const sel = allWorlds.filter(w=>selectedHosts.has(w.host));
-    return sel.length ? sel : (allWorlds.length ? [allWorlds[0]] : []);
-  }
-
-  async function startMeasurement(){
-    const worlds = selectedWorlds().map(w=>w.host);
-    if(!worlds.length){
-      msgWorld("Pick at least one world."); return;
-    }
-    msgWorld("");
-
-    const body = {
-      asn: parseInt(el("#asn").value,10),
-      capital: el("#capital").value,
-      worlds,
-      tcp_port: parseInt(el("#port").value,10)
-    };
-    const nocache = el("#nocache").checked ? "?nocache=1" : "";
-
-    el("#startBtn").disabled = true;
-    clearResultsRows();
-    addPendingRows(worlds);
-
-    try{
-      const r = await fetch(`${API_BASE}/measure${nocache}`,{
-        method:"POST",
-        headers:{ "content-type":"application/json" },
-        body: JSON.stringify(body)
-      });
-      if(!r.ok){
-        const t = await r.text().catch(()=> "");
-        throw new Error(`measure ${r.status} ${t}`);
-      }
-      const j = await r.json();
-      // Poll
-      await pollResults(j.run_id);
-    }catch(err){
-      console.error(err);
-      msgWorld(`Failed to start measurement: ${err.message}`);
-    }finally{
-      el("#startBtn").disabled = false;
-    }
-  }
-
-  function clearResultsRows(){ el("#resultsBody").innerHTML=""; }
-  function addPendingRows(worlds){
-    const tb = el("#resultsBody");
-    for(const host of worlds){
-      const w = allWorlds.find(x=>x.host===host) || {name:host,port:el("#port").value,members:true,activity:""};
-      const tr = document.createElement("tr"); tr.dataset.host=host;
-      tr.innerHTML = rowHtml(w,{ status:"Queued" });
+  // ---------- results table ----------
+  function clearRows(){ $("#resultsBody").innerHTML=""; }
+  function addPendingRows(hosts){
+    const tb=$("#resultsBody");
+    hosts.forEach(h=>{
+      const w=allWorlds.find(x=>x.host===h) || {name:h,port:$("#port").value,members:true,activity:""};
+      const tr=document.createElement("tr"); tr.dataset.host=h;
+      tr.innerHTML=rowHtml(w,{status:"Queued"});
       tb.appendChild(tr);
-    }
+    });
   }
   function updateRow(host, data){
-    const tr = el(`#resultsBody tr[data-host="${CSS.escape(host)}"]`);
+    const tr = document.querySelector(`#resultsBody tr[data-host="${CSS.escape(host)}"]`);
     if(!tr) return;
-    const w = allWorlds.find(x=>x.host===host) || {name:host,port:el("#port").value,members:true,activity:""};
-    tr.innerHTML = rowHtml(w, data);
+    const w=allWorlds.find(x=>x.host===host) || {name:host,port:$("#port").value,members:true,activity:""};
+    tr.innerHTML=rowHtml(w,data);
   }
-  function rowHtml(w, data){
-    const ping = data?.ping || {};
-    const tr = data?.traceroute || {};
-    const stat = data?.status || (ping?.samples>0 || tr?.hops ? "Done" : "Pending");
+  function rowHtml(w,data){
+    const ping=data?.ping||{}, tr=data?.traceroute||{};
+    const status = data?.status || ((ping.samples>0 || tr.hops)? "Done":"Pending");
     return `
-      <td>${escapeHtml(w.name)}</td>
-      <td>${w.port ?? el("#port").value}</td>
-      <td>${w.members ? "Yes" : "No"}</td>
-      <td>${w.activity ? escapeHtml(w.activity) : "—"}</td>
-      <td>${fmt(ping.rtt_med,3)}</td>
-      <td>${fmt(ping.rtt_p95,3)}</td>
-      <td>${fmt(ping.jitter,3)}</td>
+      <td>${esc(w.name)}</td>
+      <td>${w.port ?? $("#port").value}</td>
+      <td>${w.members?"Yes":"No"}</td>
+      <td>${w.activity?esc(w.activity):"—"}</td>
+      <td>${fmt(ping.rtt_med)}</td>
+      <td>${fmt(ping.rtt_p95)}</td>
+      <td>${fmt(ping.jitter)}</td>
       <td>${ping.loss_pct==null?"—":fmt(ping.loss_pct,2)}</td>
       <td>${tr.hops ?? "—"}</td>
-      <td>${fmt(tr.final_hop_rtt,3)}</td>
-      <td>${stat}</td>
+      <td>${fmt(tr.final_hop_rtt)}</td>
+      <td>${status}</td>
     `;
   }
 
-  async function pollResults(runId){
-    // Backoff: 2,2,2,3,3,5,7,10,15,20 (≈69s)
-    const waits = [2000,2000,2000,3000,3000,5000,7000,10000,15000,20000];
-    for(let i=0;i<waits.length;i++){
-      await sleep(waits[i]);
-      const r = await fetch(`${API_BASE}/results?run=${encodeURIComponent(runId)}`,{cache:"no-cache"});
-      if(!r.ok) continue;
+  // ---------- measurement & polling ----------
+  function chosenWorlds(){
+    const sel = allWorlds.filter(w=>selectedHosts.has(w.host));
+    return sel.length?sel:(allWorlds[0]?[allWorlds[0]]:[]);
+  }
+
+  async function startMeasurement(){
+    const worlds = chosenWorlds().map(w=>w.host);
+    if(!worlds.length){ showErr("#worldErr","Pick at least one world."); return; }
+    showErr("#worldErr","");
+
+    const body = {
+      asn: parseInt($("#asn").value,10),
+      capital: $("#capital").value,
+      worlds,
+      tcp_port: parseInt($("#port").value,10)
+    };
+    const nocache = $("#nocache").checked ? "?nocache=1" : "";
+
+    $("#startBtn").disabled=true;
+    clearRows(); addPendingRows(worlds);
+
+    try{
+      const r = await fetch(`${API_BASE}/measure${nocache}`,{
+        method:"POST", headers:{ "content-type":"application/json" }, body:JSON.stringify(body)
+      });
+      if(!r.ok){ throw new Error(`measure ${r.status}`); }
       const j = await r.json();
-      const list = j.results || [];
-      for(const item of list){
-        updateRow(item.world, {
-          ping: item.ping,
-          traceroute: item.traceroute,
-          status: (item.ping?.samples>0 || item.traceroute?.hops) ? "Done" : "Pending"
-        });
-      }
-      // If every row has at least samples or hops, stop early
-      const allDone = list.length && list.every(x => (x.ping?.samples>0) || (x.traceroute?.hops));
-      if(allDone) break;
+      await pollResults(j.run_id);
+    }catch(e){
+      showErr("#worldErr",`Failed to start measurement: ${e.message}`);
+      console.error(e);
+    }finally{
+      $("#startBtn").disabled=false;
     }
   }
 
-  function msgWorld(s){
-    const elx = el("#worldErr");
-    if(!s){ elx.style.display="none"; elx.textContent=""; }
-    else { elx.style.display="block"; elx.textContent=s; }
+  async function pollResults(runId){
+    const waits=[2000,2000,2000,3000,3000,5000,7000,10000,15000,20000];
+    for(let i=0;i<waits.length;i++){
+      await sleep(waits[i]);
+      try{
+        const r = await fetch(`${API_BASE}/results?run=${encodeURIComponent(runId)}`,{cache:"no-cache"});
+        if(!r.ok) continue;
+        const j = await r.json();
+        const list=j.results||[];
+        for(const item of list){
+          updateRow(item.world,{ping:item.ping,traceroute:item.traceroute,status:(item.ping?.samples>0||item.traceroute?.hops)?"Done":"Pending"});
+        }
+        if(list.length && list.every(x => (x.ping?.samples>0) || (x.traceroute?.hops))) break;
+      }catch{}
+    }
   }
 
-  // ===== Init =====
-  (async function init(){
+  // ---------- init ----------
+  (async function(){
     await Promise.all([loadASNs(), loadWorlds()]);
-    el("#toggleWorldsBtn").addEventListener("click", ()=>{ showingAll=!showingAll; renderWorlds(); });
-    el("#startBtn").addEventListener("click", startMeasurement);
+    $("#toggleWorldsBtn").addEventListener("click", ()=>{ showingAll=!showingAll; renderWorlds(); });
+    $("#startBtn").addEventListener("click", startMeasurement);
   })();
 </script>
 </body>
