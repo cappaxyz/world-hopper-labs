@@ -4,273 +4,324 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>World Hopper Labs</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
   <style>
-    body{max-width:1100px;margin:auto}
-    code,.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
-    .muted{opacity:.7}
-    .error{color:#b00020}
-    .ok{color:#0b8457}
-    #worlds{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.5rem}
-    .small{font-size:.9em}
+    :root{--bg:#0b1220;--card:#131b2d;--muted:#9fb0d0;--text:#eaf1ff;--brand:#0a69ff;--good:#19c37d;--warn:#ffd166;--bad:#ff6b6b}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial}
+    .wrap{max-width:1080px;margin:24px auto;padding:0 16px}
+    h1{font-size:clamp(28px,4vw,40px);margin:8px 0 6px} .sub{color:var(--muted);margin:0 0 18px}
+    .card{background:var(--card);border:1px solid #223355;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    .pad{padding:18px}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+    .fg-4{grid-column:span 4} .fg-12{grid-column:span 12}
+    label{display:block;color:var(--muted);font-size:13px;margin:0 0 6px}
+    select,input[type="number"]{width:100%;background:#0e1630;color:var(--text);border:1px solid #2a3b66;border-radius:10px;padding:12px}
+    .worlds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:6px}
+    .world{display:flex;gap:8px;align-items:flex-start;background:#0f1732;border:1px solid #24365f;padding:10px;border-radius:10px}
+    .muted{color:var(--muted);font-size:12px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 18px;border-radius:12px;border:1px solid #245; background:var(--brand); color:white; font-weight:600; cursor:pointer}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .msg{margin:10px 0 0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:12px;border-top:1px solid #223358}
+    th{color:var(--muted);font-weight:600;text-align:left}
+    .badge{display:inline-flex;align-items:center;gap:6px;border:1px solid #2a3b66;border-radius:999px;padding:3px 8px;font-size:12px;white-space:nowrap}
+    .m{background:rgba(25,195,125,.12);border-color:rgba(25,195,125,.35)} .f{background:rgba(160,180,210,.12)}
+    .stat{font-variant-numeric:tabular-nums}
+    .ok{color:var(--good)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+    .note{color:var(--muted);font-size:12px;margin-top:10px}
+    .footer{color:var(--muted);font-size:12px;margin:18px 0 40px}
+    details{margin-top:8px}
+    summary{cursor:pointer;color:var(--muted)}
+    code{font-family:ui-monospace,Menlo,Consolas,monospace}
   </style>
 </head>
 <body>
-  <header>
+  <div class="wrap">
     <h1>World Hopper Labs</h1>
-    <p class="mono muted">Measure OSRS latency & TCP pathing from your ISP + region.</p>
-  </header>
+    <p class="sub">Measure OSRS latency &amp; TCP pathing from your ISP + region.</p>
 
-  <main>
-    <article>
-      <form id="runForm">
-        <div class="grid">
-          <!-- ASN: dropdown -->
-          <label>ISP (ASN)
-            <select id="asn" required>
-              <option disabled selected value="">Loading ISPs…</option>
-            </select>
-          </label>
-
-          <!-- Capital: full names shown; value is the short code used by API -->
-          <label>Closest capital
-            <select id="capital" required>
-              <option value="SYD">Sydney</option>
-              <option value="MEL" selected>Melbourne</option>
-              <option value="BNE">Brisbane</option>
-              <option value="ADL">Adelaide</option>
-              <option value="PER">Perth</option>
-              <option value="CBR">Canberra</option>
-              <option value="HBA">Hobart</option>
-              <option value="DRW">Darwin</option>
-              <option value="AKL">Auckland</option>
-              <option value="WLG">Wellington</option>
-              <option value="CHC">Christchurch</option>
-            </select>
-          </label>
-
-          <!-- Port: dropdown -->
-          <label>TCP Port
-            <select id="port" required>
-              <option value="43594" selected>43594</option>
-              <option value="43595">43595</option>
-            </select>
-          </label>
+    <!-- Controls -->
+    <div class="card pad">
+      <div class="grid">
+        <div class="fg-4">
+          <label for="asnSel">ISP (ASN)</label>
+          <select id="asnSel"></select>
+        </div>
+        <div class="fg-4">
+          <label for="capSel">Closest capital</label>
+          <select id="capSel"></select>
+        </div>
+        <div class="fg-4">
+          <label for="portSel">TCP Port</label>
+          <select id="portSel">
+            <option value="43594" selected>43594</option>
+            <option value="43595">43595</option>
+          </select>
         </div>
 
-        <details open>
-          <summary>Worlds (select up to 5)</summary>
-          <div id="worlds" class="small"></div>
-        </details>
+        <div class="fg-12">
+          <label>Worlds (select up to 5)</label>
+          <div id="worldsList" class="worlds"></div>
+        </div>
 
-        <button id="runBtn" type="submit">Run test</button>
-        <span id="status" class="mono muted" style="margin-left:.6rem;">Ready.</span>
-      </form>
-    </article>
+        <div class="fg-12">
+          <button id="runBtn" class="btn">Run test</button>
+          <div id="msg" class="msg muted"></div>
+          <details id="dbgBox" style="display:none">
+            <summary>Debug</summary>
+            <pre id="dbg" class="muted" style="white-space:pre-wrap"></pre>
+          </details>
+        </div>
+      </div>
+    </div>
 
-    <article>
-      <h3>Results</h3>
-      <table role="grid">
-        <thead>
-          <tr>
-            <th>World</th><th>Probe</th><th>RTT med</th><th>p95</th>
-            <th>Jitter</th><th>Loss %</th><th>Hops</th><th>Last-hop RTT</th>
-          </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
-      <p class="small muted">Note: results usually arrive within ~3–15s; we poll with backoff up to ~75s.</p>
-    </article>
-  </main>
+    <!-- Results -->
+    <div class="card pad" style="margin-top:16px">
+      <h2 style="margin:0 0 8px">Results</h2>
+      <div class="muted" id="probeLine" style="margin-bottom:6px"></div>
+      <div style="overflow:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>World</th>
+              <th>Members</th>
+              <th>Activity</th>
+              <th>Probe</th>
+              <th>RTT med</th>
+              <th>p95</th>
+              <th>Jitter</th>
+              <th>Loss %</th>
+              <th>Hops</th>
+              <th>Last-hop RTT</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <p class="note">Note: results usually arrive within ~3–15s; we poll with backoff up to ~75s.</p>
+    </div>
+
+    <p class="footer">API base: <code id="apiShow"></code></p>
+  </div>
 
   <script>
-  // ==== CONFIG ====
-  const API_BASE = "https://api.whl.freshcuppa.wtf";
-  const WORLDS_JSON = "/data/worlds-au-nz.json";
-  const ASN_SEEDS_JSON = "/data/asn-seeds.json"; // optional file you can maintain
-  const MAX_WORLDS = 5;
+    // --- Config: set this if you serve API elsewhere ---
+    const API_BASE = (window.NEXT_PUBLIC_API_BASE) || 'https://api.whl.freshcuppa.wtf';
+    document.getElementById('apiShow').textContent = API_BASE;
 
-  // Fallback ASN seeds (used only if /data/asn-seeds.json is missing)
-  // Format of /data/asn-seeds.json should be: [{ "asn": 1221, "label": "Telstra (AS1221, AU)" }, ...]
-  const FALLBACK_ASN_SEEDS = [
-    { asn: 1221,  label: "Telstra – AU (AS1221)" },
-    { asn: 4764,  label: "Aussie Broadband – AU (AS4764)" },
-    { asn: 4826,  label: "Vocus/Orcon – AU (AS4826)" },
-    { asn: 7545,  label: "TPG – AU (AS7545)" },
-    { asn: 7474,  label: "Optus – AU (AS7474)" },
-    { asn: 38195, label: "Superloop – AU (AS38195)" },
-    { asn: 4739,  label: "iiNet – AU (AS4739)" },
-    { asn: 58470, label: "Launtel – AU (AS58470)" },
-    { asn: 4771,  label: "Spark – NZ (AS4771)" },
-    { asn: 9500,  label: "Vodafone/One – NZ (AS9500)" },
-    { asn: 9790,  label: "Vocus – NZ (AS9790)" },
-    { asn: 23655, label: "2degrees – NZ (AS23655)" },
-  ];
+    // ASN seeds (label -> number)
+    const ASN_OPTIONS = [
+      { label: 'Telstra – AU (AS1221)', value: 1221 },
+      { label: 'Aussie Broadband – AU (AS4764)', value: 4764 },
+      { label: 'Superloop – AU (AS38195)', value: 38195 },
+      { label: 'TPG – AU (AS7545)', value: 7545 },
+      { label: 'Optus – AU (AS4804)', value: 4804 },
+      { label: 'iiNet – AU (AS4739)', value: 4739 }
+    ];
 
-  // ==== helpers ====
-  const $ = (id) => document.getElementById(id);
-  const setStatus = (msg, cls="muted") => { const el=$("status"); el.textContent=msg; el.className=`mono ${cls}`; };
-  const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
-  const safe = (v)=> (v==null || v==="") ? "—" : v;
+    // Capitals (full names -> code used by worker)
+    const CAPITALS = [
+      { label: 'Sydney',   code: 'SYD' },
+      { label: 'Melbourne',code: 'MEL' },
+      { label: 'Brisbane', code: 'BNE' },
+      { label: 'Adelaide', code: 'ADL' },
+      { label: 'Perth',    code: 'PER' },
+      { label: 'Canberra', code: 'CBR' },
+      { label: 'Hobart',   code: 'HBA' },
+      { label: 'Darwin',   code: 'DRW' },
+      { label: 'Auckland', code: 'AKL' },
+      { label: 'Wellington', code: 'WLG' },
+      { label: 'Christchurch', code: 'CHC' },
+    ];
 
-  // Load ASN seeds from JSON, fallback if missing
-  async function loadAsnSeeds() {
-    let list = null;
-    try {
-      const r = await fetch(ASN_SEEDS_JSON, { cache: "no-cache" });
-      if (r.ok) list = await r.json();
-    } catch (_) {}
-    if (list !== null && list && !Array.isArray(list) && typeof list === "object") {
-      const flat = [];
-      for (const val of Object.values(list)) {
-        if (Array.isArray(val)) {
-          flat.push(...val);
-        } else if (val && typeof val === "object" && "asn" in val) {
-          flat.push(val);
-        }
-      }
-      list = flat;
-    }
-    if (!Array.isArray(list) || list.length === 0) list = FALLBACK_ASN_SEEDS;
+    // --- State
+    let WORLDS = []; // loaded from /data/worlds-au-nz.json
+    const rows = document.getElementById('rows');
+    const worldsList = document.getElementById('worldsList');
+    const dbgBox = document.getElementById('dbgBox');
+    const dbg = document.getElementById('dbg');
+    const msg = document.getElementById('msg');
+    const runBtn = document.getElementById('runBtn');
+    const probeLine = document.getElementById('probeLine');
 
-    const sel = $("asn");
-    sel.innerHTML = "";
-    for (const item of list) {
-      const opt = document.createElement("option");
-      opt.value = String(item.asn);
-      opt.textContent = item.label || `AS${item.asn}`;
-      sel.appendChild(opt);
-    }
-    // Try to default to Telstra (1221) if present
-    if ([...sel.options].some(o=>o.value==="1221")) sel.value = "1221";
-  }
-
-  async function loadWorlds(){
-    try{
-      const r = await fetch(WORLDS_JSON, {cache:"no-cache"});
-      if(!r.ok) throw new Error(`HTTP ${r.status}`);
-      const list = await r.json();
-      const wrap = $("worlds"); wrap.innerHTML = "";
-      list.forEach((w,i) => {
-        const id = `w_${i}`;
-        const label = document.createElement("label");
-        label.innerHTML = `
-          <input type="checkbox" id="${id}" value="${encodeURIComponent(JSON.stringify(w))}">
-          ${w.name} <span class="muted">(${w.host})</span>`;
-        wrap.appendChild(label);
+    // --- UI bootstrap
+    (function init(){
+      // asn
+      const asnSel = document.getElementById('asnSel');
+      ASN_OPTIONS.forEach(o => {
+        const opt = document.createElement('option');
+        opt.value = String(o.value);
+        opt.textContent = o.label;
+        asnSel.appendChild(opt);
       });
-      setStatus("Done.", "ok");
-    }catch(e){
-      setStatus(`Failed to load world list: ${e.message||e}`, "error");
+
+      // capital
+      const capSel = document.getElementById('capSel');
+      CAPITALS.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.code;
+        opt.textContent = c.label;
+        capSel.appendChild(opt);
+      });
+      // defaults that match your earlier tests
+      asnSel.value = '1221';
+      capSel.value = 'MEL';
+
+      // load worlds
+      fetch('./data/worlds-au-nz.json', { cache: 'no-store' })
+        .then(r => r.json())
+        .then(list => { WORLDS = list; renderWorlds(list); })
+        .catch(e => setMsg('Failed to load world list: ' + e, true));
+
+      runBtn.addEventListener('click', onRun);
+    })();
+
+    function renderWorlds(list){
+      worldsList.innerHTML = '';
+      list.forEach((w, idx) => {
+        const id = 'w_' + idx;
+        const div = document.createElement('label');
+        div.className = 'world';
+        div.innerHTML = `
+          <input type="checkbox" id="${id}" data-host="${w.host}" data-port="${w.port}" />
+          <div>
+            <div><strong>${w.name}</strong></div>
+            <div class="muted">${w.host} • ${w.activity || '—'}</div>
+          </div>
+        `;
+        worldsList.appendChild(div);
+      });
     }
-  }
 
-  async function selectProbe(asn, capital){
-    const r = await fetch(`${API_BASE}/probes?asn=${encodeURIComponent(asn)}&capital=${encodeURIComponent(capital)}`);
-    const j = await r.json().catch(()=>({error:"bad_json"}));
-    if(!r.ok || j.error) throw new Error(j.error || `probe_http_${r.status}`);
-    return j.probe.id;
-  }
+    function setMsg(t, isErr){
+      msg.textContent = t || '';
+      msg.style.color = isErr ? 'var(--bad)' : 'var(--muted)';
+    }
+    function showDebug(obj){
+      dbgBox.style.display = 'block';
+      dbg.textContent = JSON.stringify(obj, null, 2);
+    }
 
-  async function createMeasurement(asn, capital, worlds, port){
-    const body = JSON.stringify({ asn, capital, worlds, tcp_port: port });
-    const r = await fetch(`${API_BASE}/measure`, {
-      method:"POST", headers:{ "content-type":"application/json" }, body
-    });
-    const j = await r.json().catch(()=>({error:"bad_json"}));
-    if(!r.ok || j.error) throw new Error(j.error || `measure_http_${r.status}`);
-    return j.run_id;
-  }
+    function worldSelection(max=5){
+      const picked = [...worldsList.querySelectorAll('input[type="checkbox"]:checked')]
+        .slice(0, max)
+        .map(ch => ch.getAttribute('data-host'));
+      return picked;
+    }
 
-  async function fetchResults(runId){
-    const r = await fetch(`${API_BASE}/results?run=${encodeURIComponent(runId)}`);
-    if(!r.ok) return null;
-    const j = await r.json().catch(()=>null);
-    if(!j || !Array.isArray(j.results)) return null;
-    return j;
-  }
+    function activityFor(host){
+      const w = WORLDS.find(x => x.host === host);
+      return w?.activity || '';
+    }
+    function membersFor(host){
+      const w = WORLDS.find(x => x.host === host);
+      return w?.members ? 'Members' : 'Free';
+    }
 
-  function renderResults(res){
-    const tb = $("tbody"); tb.innerHTML = "";
-    res.results.forEach(row=>{
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${safe(row.world)}</td>
-        <td>${safe(res.probe_id)}</td>
-        <td>${safe(row.ping?.rtt_med)}</td>
-        <td>${safe(row.ping?.rtt_p95)}</td>
-        <td>${safe(row.ping?.jitter)}</td>
-        <td>${safe(row.ping?.loss_pct)}</td>
-        <td>${safe(row.traceroute?.hops)}</td>
-        <td>${safe(row.traceroute?.final_hop_rtt)}</td>`;
-      tb.appendChild(tr);
-    });
-  }
+    async function onRun(){
+      setMsg('');
+      probeLine.textContent = '';
+      rows.innerHTML = '';
+      runBtn.disabled = true;
 
-  $("runForm").addEventListener("submit", async (evt)=>{
-    evt.preventDefault();
-    const btn = $("runBtn"); btn.setAttribute("aria-busy", "true"); btn.disabled = true;
-    $("tbody").innerHTML = "";
+      const asn = Number(document.getElementById('asnSel').value);
+      const capital = document.getElementById('capSel').value;
+      const port = Number(document.getElementById('portSel').value);
+      const worlds = worldSelection(5);
 
-    try{
-      const asn = Number($("asn").value);
-      const capital = $("capital").value;         // short code value (e.g., "MEL")
-      const port = Number($("port").value)||43594;
-
-      const checks = [...document.querySelectorAll("#worlds input[type=checkbox]:checked")];
-      if(checks.length === 0) throw new Error("select_at_least_one_world");
-      if(checks.length > MAX_WORLDS) throw new Error(`max_${MAX_WORLDS}_worlds`);
-      const worlds = checks.map(c => JSON.parse(decodeURIComponent(c.value)).host);
-
-      setStatus("Selecting probe…");
-      await selectProbe(asn, capital); // fail-fast; Worker can also auto-select
-
-      setStatus("Creating measurements…");
-      const runId = await createMeasurement(asn, capital, worlds, port);
-      setStatus(`Run created. Waiting for results…`);
-
-      // Poll up to ~75s; require BOTH ping & traceroute per world
-      const schedule = [2000, 3000, 4000, 5000, 7000, 9000, 12000, 15000, 18000, 20000];
-      let allDone = false;
-
-      for (let i = 0; i < schedule.length; i++) {
-        await sleep(schedule[i]);
-
-        const res = await fetchResults(runId);
-        if (res) {
-          renderResults(res);
-
-          const perWorldDone = res.results.map(row => {
-            const pingReady = Number(row?.ping?.samples || 0) > 0;
-            const trReady   = row?.traceroute?.hops != null;
-            return pingReady && trReady;
-          });
-
-          const doneCount = perWorldDone.filter(Boolean).length;
-          allDone = doneCount === res.results.length;
-
-          if (allDone) {
-            setStatus("Done.", "ok");
-            break;
-          } else {
-            setStatus(`Waiting for traceroutes… ${doneCount}/${res.results.length} worlds ready (attempt ${i+1}/${schedule.length})`);
-          }
-        } else {
-          setStatus(`Waiting for results… (attempt ${i+1}/${schedule.length})`);
-        }
+      if (!worlds.length){
+        setMsg('Pick at least one world.', true);
+        runBtn.disabled = false;
+        return;
       }
 
-      if (!allDone) setStatus("Timed out waiting for traceroutes.", "error");
-    }catch(err){
-      setStatus(String(err.message || err), "error");
-    }finally{
-      btn.removeAttribute("aria-busy"); btn.disabled = false;
-    }
-  });
+      // seed rows
+      for(const host of worlds){
+        const tr = document.createElement('tr');
+        tr.id = 'row_' + host;
+        tr.innerHTML = `
+          <td><strong>${host}</strong></td>
+          <td><span class="badge ${WORLDS.find(w=>w.host===host)?.members?'m':'f'}">${membersFor(host)}</span></td>
+          <td>${activityFor(host) || '—'}</td>
+          <td class="muted">—</td>
+          <td class="stat">—</td>
+          <td class="stat">—</td>
+          <td class="stat">—</td>
+          <td class="stat">—</td>
+          <td class="stat">—</td>
+          <td class="stat">—</td>
+        `;
+        rows.appendChild(tr);
+      }
 
-  // init
-  loadAsnSeeds();
-  loadWorlds();
+      try{
+        // Create measurements
+        const body = JSON.stringify({ asn, capital, worlds, tcp_port: port });
+        const r = await fetch(API_BASE + '/measure', {
+          method:'POST',
+          headers:{ 'content-type':'application/json' },
+          body
+        });
+        if (!r.ok){
+          const txt = await r.text();
+          throw new Error('measure failed ' + r.status + ': ' + txt);
+        }
+        const data = await r.json();
+        showDebug({ measure_response: data });
+
+        const runId = data.run_id;
+        const probeId = data.probe_id;
+        probeLine.textContent = 'Probe: ' + probeId + ' • run ' + runId;
+
+        // Poll /results with backoff: 1s,2s,3s,5s,8s,12s,16s (≈47s), keep a couple more polls
+        const waits = [1000,2000,3000,5000,8000,12000,16000,16000,16000];
+        for (let i=0;i<waits.length;i++){
+          await new Promise(res => setTimeout(res, waits[i]));
+          const rr = await fetch(API_BASE + '/results?run=' + encodeURIComponent(runId));
+          if (!rr.ok) continue;
+          const res = await rr.json();
+          renderResults(res.results || []);
+          // done if we have samples or traceroute hops on every requested world
+          if (doneEnough(res.results || [], worlds)) break;
+        }
+        setMsg('Done.');
+      }catch(e){
+        setMsg(String(e.message || e), true);
+      }finally{
+        runBtn.disabled = false;
+      }
+    }
+
+    function doneEnough(results, wantedHosts){
+      if (!results.length) return false;
+      const byHost = Object.fromEntries(results.map(r=>[r.world, r]));
+      return wantedHosts.every(h => {
+        const r = byHost[h];
+        if (!r) return false;
+        const pingOk = r.ping && (r.ping.samples || 0) > 0;
+        const trOk = r.traceroute && (r.traceroute.hops || 0) > 0;
+        return pingOk || trOk;
+      });
+    }
+
+    function fmt(n, digits=3){
+      return (n==null || Number.isNaN(n)) ? '—' : Number(n).toFixed(digits);
+    }
+    function renderResults(arr){
+      for (const r of arr){
+        const tr = document.getElementById('row_' + r.world);
+        if (!tr) continue;
+        const tds = tr.querySelectorAll('td');
+        // 0 world, 1 members badge, 2 activity
+        tds[3].textContent = r.probe_id || document.getElementById('probeLine').textContent.replace(/^Probe:\s*/,'').split('•')[0].trim();
+        tds[4].textContent = fmt(r?.ping?.rtt_med);
+        tds[5].textContent = fmt(r?.ping?.rtt_p95);
+        tds[6].textContent = fmt(r?.ping?.jitter);
+        tds[7].textContent = (r?.ping?.loss_pct==null) ? '—' : String(r.ping.loss_pct);
+        tds[8].textContent = (r?.traceroute?.hops==null)?'—':String(r.traceroute.hops);
+        tds[9].textContent = fmt(r?.traceroute?.final_hop_rtt);
+      }
+    }
   </script>
 </body>
 </html>
