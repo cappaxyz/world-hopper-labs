@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>World Hopper Labs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
   <style> body{max-width:1100px;margin:auto} code{font-size:.9em} .mono{font-family:ui-monospace,Menlo,Consolas,monospace} </style>
@@ -70,22 +71,29 @@
   <script>
   const API = "https://api.whl.freshcuppa.wtf"; // your Worker
   const worldsUrl = "/worlds-au-nz.json";       // hosted by Pages
-
-  const el = (id)=>document.getElementById(id);
+  const POLLING_INTERVAL_MS = 2500; // Polling interval in milliseconds
+  const MAX_POLL_ATTEMPTS = 4; // Maximum polling attempts for results
+  const el = (id) => {
+    const element = document.getElementById(id);
+    if (!element) {
+      throw new Error(`Element with id "${id}" not found`);
+    }
+    return element;
+  };
   async function loadWorlds(){
     try{
       const r = await fetch(worldsUrl, {cache:"no-cache"});
       const list = await r.json();
       const sel = el("world");
       sel.innerHTML = "";
-      for(const w of list){
-        const opt = document.createElement("option");
-        opt.value = JSON.stringify({host:w.host, port:w.port||43594});
-        opt.textContent = `${w.name} — ${w.host}`;
-        sel.appendChild(opt);
-      }
-    }catch(e){
-      el("status").textContent = "Failed to load world list: " + e;
+        for(const w of list){
+          const opt = document.createElement("option");
+          opt.value = JSON.stringify({host:w.host, port:w.port||43594});
+          opt.textContent = `${w.name} — ${w.host}`;
+          sel.appendChild(opt);
+        }
+    } catch(e){
+      el("status").textContent = "Failed to load world list: " + (e && e.message ? e.message : e);
     }
   }
 
@@ -116,7 +124,7 @@
     // Step 3: poll results a couple of times
     const tbody = document.querySelector("#table tbody");
     tbody.innerHTML = "";
-    for(let attempt=1; attempt<=4; attempt++){
+      await new Promise(r=>setTimeout(r, POLLING_INTERVAL_MS));
       await new Promise(r=>setTimeout(r, 2500));
       const rr = await fetch(`${API}/results?run=${encodeURIComponent(runId)}`);
       const res = await rr.json();
@@ -137,8 +145,7 @@
         el("status").textContent = "Done.";
         return;
       }
-      el("status").textContent = `Waiting for results... (attempt ${attempt}/4)`;
-    }
+      el("status").textContent = `Waiting for results... (attempt 1/4)`;
     el("status").textContent = "Timed out waiting for results.";
   }
 
