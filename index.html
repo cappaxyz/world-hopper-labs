@@ -120,6 +120,17 @@
       const r = await fetch(ASN_SEEDS_JSON, { cache: "no-cache" });
       if (r.ok) list = await r.json();
     } catch (_) {}
+    if (list !== null && list && !Array.isArray(list) && typeof list === "object") {
+      const flat = [];
+      for (const val of Object.values(list)) {
+        if (Array.isArray(val)) {
+          flat.push(...val);
+        } else if (val && typeof val === "object" && "asn" in val) {
+          flat.push(val);
+        }
+      }
+      list = flat;
+    }
     if (!Array.isArray(list) || list.length === 0) list = FALLBACK_ASN_SEEDS;
 
     const sel = $("asn");
