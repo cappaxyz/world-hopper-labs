@@ -1,0 +1,7 @@
+{
+  "metadata": { "ttl_minutes": 15 },
+  "worlds": [
+    { "id": "W301", "hostname": "world301.example.com", "region": "AU" }
+    // add more later; hostnames will be validated at runtime
+  ]
+}

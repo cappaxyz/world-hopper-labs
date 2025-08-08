@@ -1,0 +1,18 @@
+{
+  "AU": [
+    { "label": "Telstra", "asn": 1221 },
+    { "label": "Optus", "asn": 4804 },
+    { "label": "TPG/iiNet", "asn": 7545 },
+    { "label": "Vocus", "asn": 4826 },
+    { "label": "Aussie Broadband", "asn": 4764 },
+    { "label": "Superloop", "asn": 38195 },
+    { "label": "Exetel", "asn": 27598 },
+    { "label": "Vodafone/TPG Mobile", "asn": 45609 }
+  ],
+  "NZ": [
+    { "label": "Spark", "asn": 4771 },
+    { "label": "2degrees", "asn": 23655 },
+    { "label": "One NZ/Vodafone", "asn": 9500 },
+    { "label": "Orcon/Vocus NZ", "asn": 9560 }
+  ]
+}
