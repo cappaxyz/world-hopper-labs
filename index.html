@@ -25,19 +25,36 @@
     <article>
       <form id="runForm">
         <div class="grid">
-          <label>ISP ASN
-            <input id="asn" type="number" placeholder="e.g., 1221" required value="1221"/>
-          </label>
-          <label>Closest capital
-            <select id="capital" required>
-              <option>SYD</option><option selected>MEL</option><option>BNE</option>
-              <option>ADL</option><option>PER</option><option>CBR</option>
-              <option>HBA</option><option>DRW</option>
-              <option>AKL</option><option>WLG</option><option>CHC</option>
+          <!-- ASN: dropdown -->
+          <label>ISP (ASN)
+            <select id="asn" required>
+              <option disabled selected value="">Loading ISPs…</option>
             </select>
           </label>
+
+          <!-- Capital: full names shown; value is the short code used by API -->
+          <label>Closest capital
+            <select id="capital" required>
+              <option value="SYD">Sydney</option>
+              <option value="MEL" selected>Melbourne</option>
+              <option value="BNE">Brisbane</option>
+              <option value="ADL">Adelaide</option>
+              <option value="PER">Perth</option>
+              <option value="CBR">Canberra</option>
+              <option value="HBA">Hobart</option>
+              <option value="DRW">Darwin</option>
+              <option value="AKL">Auckland</option>
+              <option value="WLG">Wellington</option>
+              <option value="CHC">Christchurch</option>
+            </select>
+          </label>
+
+          <!-- Port: dropdown -->
           <label>TCP Port
-            <input id="port" type="number" value="43594" required />
+            <select id="port" required>
+              <option value="43594" selected>43594</option>
+              <option value="43595">43595</option>
+            </select>
           </label>
         </div>
 
@@ -70,13 +87,52 @@
   // ==== CONFIG ====
   const API_BASE = "https://api.whl.freshcuppa.wtf";
   const WORLDS_JSON = "/data/worlds-au-nz.json";
+  const ASN_SEEDS_JSON = "/data/asn-seeds.json"; // optional file you can maintain
   const MAX_WORLDS = 5;
+
+  // Fallback ASN seeds (used only if /data/asn-seeds.json is missing)
+  // Format of /data/asn-seeds.json should be: [{ "asn": 1221, "label": "Telstra (AS1221, AU)" }, ...]
+  const FALLBACK_ASN_SEEDS = [
+    { asn: 1221,  label: "Telstra – AU (AS1221)" },
+    { asn: 4764,  label: "Aussie Broadband – AU (AS4764)" },
+    { asn: 4826,  label: "Vocus/Orcon – AU (AS4826)" },
+    { asn: 7545,  label: "TPG – AU (AS7545)" },
+    { asn: 7474,  label: "Optus – AU (AS7474)" },
+    { asn: 38195, label: "Superloop – AU (AS38195)" },
+    { asn: 4739,  label: "iiNet – AU (AS4739)" },
+    { asn: 58470, label: "Launtel – AU (AS58470)" },
+    { asn: 4771,  label: "Spark – NZ (AS4771)" },
+    { asn: 9500,  label: "Vodafone/One – NZ (AS9500)" },
+    { asn: 9790,  label: "Vocus – NZ (AS9790)" },
+    { asn: 23655, label: "2degrees – NZ (AS23655)" },
+  ];
 
   // ==== helpers ====
   const $ = (id) => document.getElementById(id);
   const setStatus = (msg, cls="muted") => { const el=$("status"); el.textContent=msg; el.className=`mono ${cls}`; };
   const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
   const safe = (v)=> (v==null || v==="") ? "—" : v;
+
+  // Load ASN seeds from JSON, fallback if missing
+  async function loadAsnSeeds() {
+    let list = null;
+    try {
+      const r = await fetch(ASN_SEEDS_JSON, { cache: "no-cache" });
+      if (r.ok) list = await r.json();
+    } catch (_) {}
+    if (!Array.isArray(list) || list.length === 0) list = FALLBACK_ASN_SEEDS;
+
+    const sel = $("asn");
+    sel.innerHTML = "";
+    for (const item of list) {
+      const opt = document.createElement("option");
+      opt.value = String(item.asn);
+      opt.textContent = item.label || `AS${item.asn}`;
+      sel.appendChild(opt);
+    }
+    // Try to default to Telstra (1221) if present
+    if ([...sel.options].some(o=>o.value==="1221")) sel.value = "1221";
+  }
 
   async function loadWorlds(){
     try{
@@ -147,10 +203,9 @@
 
     try{
       const asn = Number($("asn").value);
-      const capital = $("capital").value;
+      const capital = $("capital").value;         // short code value (e.g., "MEL")
       const port = Number($("port").value)||43594;
 
-      // collect worlds
       const checks = [...document.querySelectorAll("#worlds input[type=checkbox]:checked")];
       if(checks.length === 0) throw new Error("select_at_least_one_world");
       if(checks.length > MAX_WORLDS) throw new Error(`max_${MAX_WORLDS}_worlds`);
@@ -163,7 +218,7 @@
       const runId = await createMeasurement(asn, capital, worlds, port);
       setStatus(`Run created. Waiting for results…`);
 
-      // === Poll up to ~75s; wait until BOTH ping & traceroute are present for each world ===
+      // Poll up to ~75s; require BOTH ping & traceroute per world
       const schedule = [2000, 3000, 4000, 5000, 7000, 9000, 12000, 15000, 18000, 20000];
       let allDone = false;
 
@@ -174,7 +229,6 @@
         if (res) {
           renderResults(res);
 
-          // a world is done only when it has ping samples AND traceroute hops
           const perWorldDone = res.results.map(row => {
             const pingReady = Number(row?.ping?.samples || 0) > 0;
             const trReady   = row?.traceroute?.hops != null;
@@ -203,6 +257,8 @@
     }
   });
 
+  // init
+  loadAsnSeeds();
   loadWorlds();
   </script>
 </body>
