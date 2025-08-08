@@ -1,401 +1,392 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>World Hopper Labs — AU/NZ Latency/Path Tester</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root { --bg:#0b0f14; --card:#121822; --muted:#8aa1b1; --text:#e6edf3; --accent:#4da3ff; --ok:#2ecc71; --warn:#f1c40f; --bad:#e74c3c; --border:#223041; }
-    * { box-sizing: border-box; }
-    body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial; background:var(--bg); color:var(--text);}
-    header { padding:24px; border-bottom: 1px solid var(--border);}
-    h1 { margin:0 0 6px 0; font-size:20px; }
-    .muted { color: var(--muted); font-size: 13px; }
-    main { padding: 18px 24px 80px; max-width: 1100px; margin: 0 auto; }
-    .row { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; align-items: start; }
-    .card { background: var(--card); border:1px solid var(--border); border-radius: 12px; padding: 14px; }
-    .card h2 { margin: 0 0 10px 0; font-size: 15px; }
-    label { font-size: 13px; color: var(--muted); display:block; margin: 6px 0 6px; }
-    select, input[type="text"] { width: 100%; background: #0d141c; color: var(--text); border:1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
-    button { background: var(--accent); color:#001b33; border: none; border-radius: 8px; padding: 10px 14px; font-weight: 600; cursor: pointer; }
-    button[disabled] { opacity:.6; cursor:not-allowed; }
-    .controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-    .checkbox-row { display:flex; gap:10px; align-items:center; }
-    .pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; border:1px solid var(--border); }
-    .pill.free { background:#132314; color:#b7ffc3; border-color:#1e3a21;}
-    .pill.members { background:#1a2130; color:#a4c8ff; border-color:#233147;}
-    .pill.act { background:#1f1a2a; color:#e0c8ff; border-color:#2e2740; }
-    .worlds { display:grid; gap:8px; }
-    .world-item { display:flex; justify-content: space-between; align-items: center; padding:10px; border:1px solid var(--border); border-radius:10px; background:#0c121a; }
-    .world-left { display:flex; align-items:center; gap:10px; }
-    .world-name { font-weight:600; }
-    .toggle-wrap { margin-top:8px; }
-    .results { margin-top: 16px; }
-    table { width:100%; border-collapse: collapse; }
-    th, td { text-align:left; padding:10px; border-bottom:1px solid var(--border); font-size: 14px; }
-    th { color: var(--muted); font-weight: 600; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
-    .small { font-size:12px; color: var(--muted); }
-    .status { font-weight:600; }
-    .status.ok { color: var(--ok); }
-    .status.wait { color: var(--warn); }
-    .status.err { color: var(--bad); }
-    .footer { margin-top: 10px; font-size:12px; color: var(--muted); }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>World Hopper Labs — AU/NZ</title>
+<link rel="icon" href="/favicon.ico" />
+<style>
+  :root{
+    --bg:#0f1720; --panel:#121a24; --muted:#8aa0b2; --text:#e6edf3; --brand:#2b7fff; --chip:#1f2937; --ok:#16a34a; --warn:#f59e0b; --err:#ef4444;
+    --ring: rgba(59,130,246,.45);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+  a{color:var(--brand);text-decoration:none}
+  .wrap{max-width:1100px;margin:28px auto;padding:0 16px}
+  h1{font-size:28px;margin:0 0 8px}
+  .sub{color:var(--muted);margin-bottom:18px}
+  .row{display:grid;grid-template-columns:1fr;gap:16px}
+  @media (min-width:980px){ .row{grid-template-columns:1fr 1fr} }
+  .card{background:var(--panel);border:1px solid #202c39;border-radius:12px;box-shadow:0 0 0 1px rgba(255,255,255,.02) inset}
+  .card h3{margin:12px 12px 0 12px;font-size:16px}
+  .card .body{padding:12px}
+  .grid{display:grid;gap:10px}
+  /* Worlds: 3 columns on wide screens */
+  .worlds{grid-template-columns:1fr}
+  @media(min-width:740px){ .worlds{grid-template-columns:repeat(2,1fr)} }
+  @media(min-width:1024px){ .worlds{grid-template-columns:repeat(3,1fr)} }
+  .world{border:1px solid #233244;border-radius:10px;padding:10px;background:#0f1720}
+  .world header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .world h4{margin:0;font-size:14px}
+  .host{color:var(--muted);font-size:12px;word-break:break-all}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .chip{font-size:11px;padding:2px 6px;border-radius:999px;background:var(--chip);color:#cbd5e1;border:1px solid #273241}
+  .chip.m{border-color:#1d3d2a;color:#a7f3d0;background:#0c1f17}
+  .chip.f{border-color:#47311e;color:#fde68a;background:#1a140b}
+  .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .select, .input{appearance:none;background:#0c121a;border:1px solid #223144;color:var(--text);border-radius:9px;padding:8px 10px}
+  .select:focus, .input:focus{outline:2px solid var(--ring);outline-offset:0}
+  .btn{background:var(--brand);color:#fff;border:0;border-radius:9px;padding:10px 14px;cursor:pointer}
+  .btn.secondary{background:#1f2a37;color:#e5e7eb}
+  .btn:disabled{opacity:.6;cursor:default}
+  .muted{color:var(--muted)}
+  .danger{color:var(--err)}
+  .success{color:var(--ok)}
+  .table{width:100%;border-collapse:separate;border-spacing:0 8px}
+  .table th{color:#9fb2c4;font-weight:600;text-align:left;padding:0 10px 4px 10px}
+  .table td{background:#0f1720;padding:10px;border:1px solid #1f2b39}
+  .table td:first-child{border-top-left-radius:8px;border-bottom-left-radius:8px}
+  .table td:last-child{border-top-right-radius:8px;border-bottom-right-radius:8px}
+  .badge{font-size:11px;padding:2px 6px;border-radius:999px;border:1px dashed #2a3a4f;color:#a7b8c9}
+  .row-actions{display:flex;gap:8px;margin-top:10px}
+  .tiny{font-size:12px}
+</style>
 </head>
 <body>
-  <header>
-    <h1>World Hopper Labs — AU/NZ</h1>
-    <div class="muted">Quickly test RTT / loss and TCP traceroute from a RIPE Atlas probe near your ISP + city to OSRS worlds.</div>
-  </header>
+<div class="wrap">
+  <h1>World Hopper Labs — AU/NZ</h1>
+  <div class="sub">Quickly test RTT / loss and TCP traceroute from a RIPE Atlas probe near your ISP + city to OSRS worlds.</div>
 
-  <main class="row">
-    <section class="card" style="grid-column: span 4;">
-      <h2>1) Choose network & region</h2>
-      <div class="controls">
-        <div>
-          <label for="asn">ISP (ASN)</label>
-          <select id="asn"></select>
-        </div>
-        <div>
-          <label for="capital">Closest city</label>
-          <select id="capital">
-            <option value="SYD">Sydney</option>
-            <option value="MEL" selected>Melbourne</option>
-            <option value="BNE">Brisbane</option>
-            <option value="ADL">Adelaide</option>
-            <option value="PER">Perth</option>
-            <option value="CBR">Canberra</option>
-            <option value="HBA">Hobart</option>
-            <option value="DRW">Darwin</option>
-            <option value="AKL">Auckland</option>
-            <option value="WLG">Wellington</option>
-            <option value="CHC">Christchurch</option>
-          </select>
-        </div>
-        <div>
-          <label for="port">Game port</label>
-          <select id="port">
-            <option value="43594" selected>43594</option>
-            <option value="43595">43595</option>
-          </select>
-        </div>
-      </div>
-      <div class="checkbox-row" style="margin-top:10px;">
-        <input id="nocache" type="checkbox" />
-        <label for="nocache" style="margin:0;">Bypass probe cache (force fresh selection)</label>
-      </div>
-      <div class="footer">CORS is limited to this Pages domain; your browser will call <span class="mono" id="apiBase">https://api.whl.freshcuppa.wtf</span>.</div>
-    </section>
-
-    <section class="card" style="grid-column: span 8;">
-      <h2>2) Pick worlds</h2>
-      <div id="worldsWrap" class="worlds"></div>
-      <div class="toggle-wrap">
-        <button id="toggleWorldsBtn" type="button">Show all</button>
-      </div>
-      <div style="display:flex; gap:10px; align-items:center; margin-top:12px;">
-        <button id="startBtn" type="button">Start measurement</button>
-        <div id="runInfo" class="small"></div>
-      </div>
-    </section>
-
-    <section class="card" style="grid-column: 1 / -1;">
-      <h2>3) Results</h2>
-      <div id="resultsWrap" class="results">
-        <table>
-          <thead>
-            <tr>
-              <th>World</th>
-              <th>Port</th>
-              <th>Members</th>
-              <th>Activity</th>
-              <th>Median RTT</th>
-              <th>p95 RTT</th>
-              <th>Jitter</th>
-              <th>Loss %</th>
-              <th>Hops</th>
-              <th>Final hop RTT</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="resultsBody"></tbody>
-        </table>
-      </div>
-      <div class="footer" id="footNote"></div>
-    </section>
-  </main>
-
-  <script>
-    // ----- Config -----
-    const API_BASE = "https://api.whl.freshcuppa.wtf";
-    const WORLDS_JSON = "data/worlds-au-nz.json";   // ensure this file exists in repo root
-    const ASNS_JSON   = "data/asn-seeds.json";      // your existing file of ISP choices
-
-    // ----- State -----
-    let worldsAll = [];     // full array from worlds-au-nz.json
-    let worldsShown = 6;    // how many to render initially
-    let lastRunId = null;
-    let pollTimer = null;
-
-    // ----- Elements -----
-    const asnSel = () => document.getElementById("asn");
-    const capitalSel = () => document.getElementById("capital");
-    const portSel = () => document.getElementById("port");
-    const nocacheChk = () => document.getElementById("nocache");
-    const worldsWrap = () => document.getElementById("worldsWrap");
-    const toggleWorldsBtn = () => document.getElementById("toggleWorldsBtn");
-    const startBtn = () => document.getElementById("startBtn");
-    const runInfo = () => document.getElementById("runInfo");
-    const resultsBody = () => document.getElementById("resultsBody");
-    const footNote = () => document.getElementById("footNote");
-
-    // ----- Helpers -----
-    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-    function safeText(x) { return (x==null ? "" : String(x)); }
-    function fmtMs(x) { return (x==null || Number.isNaN(x)) ? "—" : `${Number(x).toFixed(3)} ms`; }
-    function fmtNum(x) { return (x==null || Number.isNaN(x)) ? "—" : `${x}`; }
-    function pill(label, cls) { return `<span class="pill ${cls}">${label}</span>`; }
-
-    function renderWorlds() {
-      const wrap = worldsWrap();
-      wrap.innerHTML = "";
-      const list = worldsAll.slice(0, worldsShown);
-      for (const w of list) {
-        const row = document.createElement("div");
-        row.className = "world-item";
-        row.innerHTML = `
-          <div class="world-left">
-            <input type="checkbox" class="world-check" data-host="${w.host}" data-port="${w.port}" />
-            <div>
-              <div class="world-name">${safeText(w.name)}</div>
-              <div class="small mono">${safeText(w.host)}:${safeText(w.port)}</div>
-              <div>
-                ${w.members ? pill("Members", "members") : pill("Free", "free")}
-                ${w.activity ? pill(safeText(w.activity), "act") : ""}
-              </div>
-            </div>
+  <div class="row">
+    <!-- Left: Network -->
+    <section class="card">
+      <h3>1) Choose network & region</h3>
+      <div class="body grid" style="grid-template-columns:1fr;gap:12px">
+        <div class="controls">
+          <div>
+            <div class="tiny muted">ISP (ASN)</div>
+            <select id="asn" class="select" style="min-width:240px"></select>
           </div>
-          <div class="small">Select</div>
-        `;
-        wrap.appendChild(row);
-      }
-      toggleWorldsBtn().textContent = (worldsShown >= worldsAll.length) ? "Show fewer" : `Show all (${worldsAll.length})`;
-    }
+          <div>
+            <div class="tiny muted">Closest city</div>
+            <select id="capital" class="select">
+              <option value="SYD">Sydney</option>
+              <option value="MEL" selected>Melbourne</option>
+              <option value="BNE">Brisbane</option>
+              <option value="ADL">Adelaide</option>
+              <option value="PER">Perth</option>
+              <option value="CBR">Canberra</option>
+              <option value="HBA">Hobart</option>
+              <option value="DRW">Darwin</option>
+              <option value="AKL">Auckland</option>
+              <option value="WLG">Wellington</option>
+              <option value="CHC">Christchurch</option>
+            </select>
+          </div>
+          <div>
+            <div class="tiny muted">Game port</div>
+            <select id="port" class="select">
+              <option value="43594" selected>43594</option>
+              <option value="43595">43595</option>
+            </select>
+          </div>
+        </div>
 
-    function collectSelectedWorlds() {
-      const checks = worldsWrap().querySelectorAll(".world-check:checked");
-      const arr = [];
-      checks.forEach(chk => arr.push(chk.dataset.host));
-      return arr;
-    }
+        <label class="controls" style="gap:6px">
+          <input id="nocache" type="checkbox" />
+          <span class="tiny">Bypass probe cache (force fresh selection)</span>
+        </label>
+        <div class="tiny muted">CORS is limited to this Pages domain; your browser will call <code id="apiSpan"></code>.</div>
+      </div>
+    </section>
 
-    function setBusy(b) {
-      startBtn().disabled = b;
-      asnSel().disabled = b;
-      capitalSel().disabled = b;
-      portSel().disabled = b;
-      nocacheChk().disabled = b;
-      toggleWorldsBtn().disabled = b;
-      worldsWrap().querySelectorAll("input[type=checkbox]").forEach(cb => cb.disabled = b);
-    }
+    <!-- Right: Worlds -->
+    <section class="card">
+      <h3>2) Pick worlds</h3>
+      <div class="body">
+        <div id="worldList" class="worlds grid"></div>
+        <div class="row-actions">
+          <button id="toggleWorldsBtn" class="btn secondary">Show all</button>
+          <button id="startBtn" class="btn">Start measurement</button>
+        </div>
+        <div id="worldErr" class="tiny danger" style="margin-top:8px;display:none"></div>
+      </div>
+    </section>
+  </div>
 
-    function renderResultsSkeleton(selected) {
-      // create rows immediately with waiting status
-      resultsBody().innerHTML = selected.map(host => `
-        <tr data-host="${host}">
-          <td class="mono">${host}</td>
-          <td class="mono" data-col="port">—</td>
-          <td data-col="members">—</td>
-          <td data-col="activity">—</td>
-          <td class="mono" data-col="rtt_med">—</td>
-          <td class="mono" data-col="rtt_p95">—</td>
-          <td class="mono" data-col="jitter">—</td>
-          <td class="mono" data-col="loss_pct">—</td>
-          <td class="mono" data-col="hops">—</td>
-          <td class="mono" data-col="final_hop_rtt">—</td>
-          <td class="status wait" data-col="status">waiting…</td>
-        </tr>
-      `).join("");
-    }
+  <!-- Results -->
+  <section class="card" style="margin-top:16px">
+    <h3>3) Results</h3>
+    <div class="body">
+      <table class="table" id="resultsTable">
+        <thead>
+          <tr>
+            <th>World</th><th>Port</th><th>Members</th><th>Activity</th>
+            <th>Median RTT</th><th>p95 RTT</th><th>Jitter</th><th>Loss %</th>
+            <th>Hops</th><th>Final hop RTT</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+      <div class="tiny muted">Note: results usually arrive within ~3–15s; we poll with backoff up to ~75s.</div>
+    </div>
+  </section>
+</div>
 
-    function updateRowFromResult(r) {
-      // r has: world, port, ping {rtt_med, rtt_p95, jitter, loss_pct}, traceroute {hops, final_hop_rtt}
-      const tr = resultsBody().querySelector(`tr[data-host="${CSS.escape(r.world)}"]`);
-      if (!tr) return;
+<script>
+  // ===== Config =====
+  const API_BASE   = (window.NEXT_PUBLIC_API_BASE || "").trim() || "https://api.whl.freshcuppa.wtf";
+  const ASNS_JSON  = "/asn-seeds.json";
+  const WORLDS_JSON= "/worlds-au-nz.json";
+  document.getElementById("apiSpan").textContent = API_BASE;
 
-      // backfill members/activity from our world list
-      const worldMeta = worldsAll.find(w => w.host === r.world);
-      if (worldMeta) {
-        tr.querySelector('[data-col="members"]').textContent = worldMeta.members ? "Members" : "Free";
-        tr.querySelector('[data-col="activity"]').textContent = worldMeta.activity || "—";
-      }
+  // ===== State =====
+  let allWorlds = [];
+  let showingAll = false;
+  let selectedHosts = new Set();
 
-      tr.querySelector('[data-col="port"]').textContent = r.port ?? "—";
+  // ===== Helpers =====
+  const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+  const el = (q)=>document.querySelector(q);
 
-      const p = r.ping || {};
-      const t = r.traceroute || {};
-      tr.querySelector('[data-col="rtt_med"]').textContent = fmtMs(p.rtt_med);
-      tr.querySelector('[data-col="rtt_p95"]').textContent = fmtMs(p.rtt_p95);
-      tr.querySelector('[data-col="jitter"]').textContent = fmtMs(p.jitter);
-      tr.querySelector('[data-col="loss_pct"]').textContent = (p.loss_pct == null ? "—" : `${Number(p.loss_pct).toFixed(3)}%`);
-      tr.querySelector('[data-col="hops"]').textContent = fmtNum(t.hops);
-      tr.querySelector('[data-col="final_hop_rtt"]').textContent = fmtMs(t.final_hop_rtt);
+  function fmt(n, digits=3){
+    if(n==null || Number.isNaN(n)) return "—";
+    return Number(n).toFixed(digits);
+  }
 
-      const havePing = p && p.samples > 0;
-      tr.querySelector('[data-col="status"]').textContent = havePing ? "ok" : "no samples yet";
-      tr.querySelector('[data-col="status"]').className = "status " + (havePing ? "ok" : "wait");
-    }
+  // ===== ASN loader (robust to any shape) =====
+  async function loadASNs(){
+    try{
+      const r = await fetch(ASNS_JSON, {cache:"no-cache"});
+      if(!r.ok) throw new Error(`asn-seeds fetch ${r.status}`);
+      const raw = await r.json();
 
-    async function startMeasurement() {
-      const asn = Number(asnSel().value);
-      const capital = capitalSel().value;
-      const port = Number(portSel().value);
-      const nocache = nocacheChk().checked;
+      // Normalize to array
+      let seeds = [];
+      if(Array.isArray(raw)) seeds = raw;
+      else if(Array.isArray(raw.items)) seeds = raw.items;
+      else if(raw && typeof raw === "object") seeds = Object.values(raw);
 
-      const selectedHosts = collectSelectedWorlds();
-      if (selectedHosts.length === 0) {
-        alert("Select at least one world.");
-        return;
-      }
-
-      setBusy(true);
-      resultsBody().innerHTML = "";
-      renderResultsSkeleton(selectedHosts);
-      runInfo().textContent = "Requesting probe & creating Atlas measurements…";
-
-      try {
-        const url = new URL(API_BASE + "/measure");
-        if (nocache) url.searchParams.set("nocache", "1");
-
-        const res = await fetch(url.toString(), {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            asn,
-            capital,
-            worlds: selectedHosts,
-            tcp_port: port
-          })
-        });
-
-        if (!res.ok) {
-          const txt = await res.text();
-          throw new Error(`Measure failed (${res.status}): ${txt}`);
-        }
-
-        const data = await res.json();
-        lastRunId = data.run_id;
-        runInfo().textContent = `Run ${lastRunId} • Probe ${data.probe_id} • Waiting for results…`;
-
-        // start polling
-        pollForResults(lastRunId, 15, 2000);
-      } catch (err) {
-        console.error(err);
-        runInfo().textContent = `Error: ${err.message}`;
-        setBusy(false);
-      }
-    }
-
-    async function pollForResults(runId, attempts = 15, waitMs = 2000) {
-      clearInterval(pollTimer);
-      let tries = 0;
-
-      const tick = async () => {
-        tries++;
-        try {
-          const url = new URL(API_BASE + "/results");
-          url.searchParams.set("run", runId);
-          const res = await fetch(url.toString(), { method: "GET" });
-          if (!res.ok) throw new Error(`Results ${res.status}`);
-          const data = await res.json();
-
-          // Update rows
-          if (Array.isArray(data.results)) {
-            data.results.forEach(updateRowFromResult);
-          }
-
-          // Heuristic: if every selected world has a non-null median OR we ran out of attempts, stop
-          const done = isDoneRendering();
-          runInfo().textContent = `Run ${runId} • Probe ${data.probe_id} • ${done ? "complete" : `poll ${tries}/${attempts}`}`;
-          if (done || tries >= attempts) {
-            clearInterval(pollTimer);
-            setBusy(false);
-          }
-        } catch (err) {
-          console.error("poll error:", err);
-          runInfo().textContent = `Poll error: ${err.message}`;
-          if (tries >= attempts) {
-            clearInterval(pollTimer);
-            setBusy(false);
-          }
-        }
-      };
-
-      tick(); // immediate first
-      pollTimer = setInterval(tick, waitMs);
-    }
-
-    function isDoneRendering() {
-      const trs = resultsBody().querySelectorAll("tr");
-      for (const tr of trs) {
-        const med = tr.querySelector('[data-col="rtt_med"]')?.textContent;
-        if (!med || med === "—") return false;
-      }
-      return true;
-    }
-
-    // ----- Init -----
-    document.addEventListener("DOMContentLoaded", async () => {
-      document.getElementById("apiBase").textContent = API_BASE;
-
-      // Load ASN list from asn-seeds.json
-      try {
-        const r = await fetch(ASNS_JSON);
-        if (!r.ok) throw new Error(`ASN list ${r.status}`);
-        const list = await r.json();
-        asnSel().innerHTML = "";
-        list.forEach(item => {
-          const opt = document.createElement("option");
-          opt.value = item.value;
-          opt.textContent = item.label;
-          asnSel().appendChild(opt);
-        });
-      } catch (e) {
-        console.error("ASN load failed:", e);
-        asnSel().innerHTML = `<option value="1221">Telstra – AU (AS1221)</option>`;
+      const normalized = [];
+      for(const s of seeds){
+        const asStr = String(s.asn ?? s.ASN ?? s.as ?? s.number ?? s.id ?? "").trim();
+        const asn = parseInt(asStr.replace(/^AS/i,""),10);
+        if(!Number.isFinite(asn) || asn<=0) continue;
+        const label = s.label ?? s.name ?? s.isp ?? s.org ?? s.provider ?? `AS${asn}`;
+        const cc = (s.cc ?? s.country ?? s.country_code ?? "").toString().toUpperCase();
+        normalized.push({ asn, label, cc });
       }
 
-      // Load worlds list
-      try {
-        const r = await fetch(WORLDS_JSON);
-        if (!r.ok) throw new Error(`worlds ${r.status}`);
-        const arr = await r.json();
-        // keep AUS/NZ only (file should already be filtered, but be safe)
-        worldsAll = Array.isArray(arr) ? arr.filter(w => /AUS|NZ/i.test(w.name || "")) : [];
-      } catch (e) {
-        console.error("worlds load failed:", e);
-        worldsAll = [];
-      }
-      if (worldsAll.length === 0) {
-        worldsAll = [
-          { name:"World 569 (AUS)", host:"oldschool269.runescape.com", port:43594, members:true, activity:"Bounty Hunter" }
-        ];
-      }
-      renderWorlds();
+      // Unique by ASN
+      const map = new Map();
+      for(const n of normalized) if(!map.has(n.asn)) map.set(n.asn,n);
+      const list = Array.from(map.values());
 
-      // UI events
-      toggleWorldsBtn().addEventListener("click", () => {
-        if (worldsShown >= worldsAll.length) {
-          worldsShown = 6;
-        } else {
-          worldsShown = worldsAll.length;
-        }
-        renderWorlds();
+      // AU/NZ to top
+      list.sort((a,b)=>{
+        const ap=(a.cc==="AU"||a.cc==="NZ")?0:1;
+        const bp=(b.cc==="AU"||b.cc==="NZ")?0:1;
+        if(ap!==bp) return ap-bp;
+        return a.label.localeCompare(b.label);
       });
 
-      startBtn().addEventListener("click", startMeasurement);
+      populateASNOptions(list);
+      console.log(`[ASN] loaded unique=${list.length}`);
+    }catch(e){
+      console.error("ASN load failed:", e);
+      populateASNOptions([{asn:1221,label:"Telstra — AU (AS1221)"}]);
+    }
+  }
+
+  function populateASNOptions(list){
+    const asnSel = el("#asn");
+    asnSel.innerHTML = "";
+    for(const item of list){
+      const opt = document.createElement("option");
+      opt.value = String(item.asn);
+      opt.textContent = item.label.includes("AS") ? item.label : `${item.label} (AS${item.asn})`;
+      asnSel.appendChild(opt);
+    }
+    if(!asnSel.options.length){
+      const opt = document.createElement("option");
+      opt.value = "1221";
+      opt.textContent = "Telstra — AU (AS1221)";
+      asnSel.appendChild(opt);
+    }
+  }
+
+  // ===== Worlds =====
+  async function loadWorlds(){
+    const r = await fetch(WORLDS_JSON, {cache:"no-cache"});
+    if(!r.ok) throw new Error("worlds list fetch failed");
+    allWorlds = await r.json();
+    renderWorlds();
+  }
+
+  function renderWorlds(){
+    const container = el("#worldList");
+    container.innerHTML = "";
+    const list = showingAll ? allWorlds : allWorlds.slice(0,6);
+
+    for(const w of list){
+      const card = document.createElement("div");
+      card.className="world";
+      card.dataset.host = w.host;
+
+      card.innerHTML = `
+        <header>
+          <input type="checkbox" class="worldCheck" ${selectedHosts.has(w.host)?'checked':''} />
+          <h4>${w.name}</h4>
+          <span style="margin-left:auto" class="tiny muted">Select</span>
+        </header>
+        <div class="host">${w.host}:${w.port}</div>
+        <div class="chips">
+          <span class="chip ${w.members ? 'm' : 'f'}">${w.members ? 'Members' : 'Free'}</span>
+          ${w.activity ? `<span class="chip">${escapeHtml(w.activity)}</span>` : ``}
+        </div>
+      `;
+      container.appendChild(card);
+    }
+
+    // Hook up selection
+    container.querySelectorAll(".world").forEach(div=>{
+      const host = div.dataset.host;
+      const cb = div.querySelector(".worldCheck");
+      cb.addEventListener("change",()=>{
+        if(cb.checked) selectedHosts.add(host); else selectedHosts.delete(host);
+      });
+      // clicking the card toggles cb (except checkbox itself)
+      div.addEventListener("click",(e)=>{
+        if(e.target.tagName.toLowerCase()==="input") return;
+        cb.checked = !cb.checked;
+        cb.dispatchEvent(new Event("change"));
+      });
     });
-  </script>
+
+    el("#toggleWorldsBtn").textContent = showingAll ? `Show fewer` : `Show all (${allWorlds.length})`;
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+  }
+
+  // ===== Measure + Poll =====
+  function selectedWorlds(){
+    // Use user selection, otherwise auto-pick first one
+    const sel = allWorlds.filter(w=>selectedHosts.has(w.host));
+    return sel.length ? sel : (allWorlds.length ? [allWorlds[0]] : []);
+  }
+
+  async function startMeasurement(){
+    const worlds = selectedWorlds().map(w=>w.host);
+    if(!worlds.length){
+      msgWorld("Pick at least one world."); return;
+    }
+    msgWorld("");
+
+    const body = {
+      asn: parseInt(el("#asn").value,10),
+      capital: el("#capital").value,
+      worlds,
+      tcp_port: parseInt(el("#port").value,10)
+    };
+    const nocache = el("#nocache").checked ? "?nocache=1" : "";
+
+    el("#startBtn").disabled = true;
+    clearResultsRows();
+    addPendingRows(worlds);
+
+    try{
+      const r = await fetch(`${API_BASE}/measure${nocache}`,{
+        method:"POST",
+        headers:{ "content-type":"application/json" },
+        body: JSON.stringify(body)
+      });
+      if(!r.ok){
+        const t = await r.text().catch(()=> "");
+        throw new Error(`measure ${r.status} ${t}`);
+      }
+      const j = await r.json();
+      // Poll
+      await pollResults(j.run_id);
+    }catch(err){
+      console.error(err);
+      msgWorld(`Failed to start measurement: ${err.message}`);
+    }finally{
+      el("#startBtn").disabled = false;
+    }
+  }
+
+  function clearResultsRows(){ el("#resultsBody").innerHTML=""; }
+  function addPendingRows(worlds){
+    const tb = el("#resultsBody");
+    for(const host of worlds){
+      const w = allWorlds.find(x=>x.host===host) || {name:host,port:el("#port").value,members:true,activity:""};
+      const tr = document.createElement("tr"); tr.dataset.host=host;
+      tr.innerHTML = rowHtml(w,{ status:"Queued" });
+      tb.appendChild(tr);
+    }
+  }
+  function updateRow(host, data){
+    const tr = el(`#resultsBody tr[data-host="${CSS.escape(host)}"]`);
+    if(!tr) return;
+    const w = allWorlds.find(x=>x.host===host) || {name:host,port:el("#port").value,members:true,activity:""};
+    tr.innerHTML = rowHtml(w, data);
+  }
+  function rowHtml(w, data){
+    const ping = data?.ping || {};
+    const tr = data?.traceroute || {};
+    const stat = data?.status || (ping?.samples>0 || tr?.hops ? "Done" : "Pending");
+    return `
+      <td>${escapeHtml(w.name)}</td>
+      <td>${w.port ?? el("#port").value}</td>
+      <td>${w.members ? "Yes" : "No"}</td>
+      <td>${w.activity ? escapeHtml(w.activity) : "—"}</td>
+      <td>${fmt(ping.rtt_med,3)}</td>
+      <td>${fmt(ping.rtt_p95,3)}</td>
+      <td>${fmt(ping.jitter,3)}</td>
+      <td>${ping.loss_pct==null?"—":fmt(ping.loss_pct,2)}</td>
+      <td>${tr.hops ?? "—"}</td>
+      <td>${fmt(tr.final_hop_rtt,3)}</td>
+      <td>${stat}</td>
+    `;
+  }
+
+  async function pollResults(runId){
+    // Backoff: 2,2,2,3,3,5,7,10,15,20 (≈69s)
+    const waits = [2000,2000,2000,3000,3000,5000,7000,10000,15000,20000];
+    for(let i=0;i<waits.length;i++){
+      await sleep(waits[i]);
+      const r = await fetch(`${API_BASE}/results?run=${encodeURIComponent(runId)}`,{cache:"no-cache"});
+      if(!r.ok) continue;
+      const j = await r.json();
+      const list = j.results || [];
+      for(const item of list){
+        updateRow(item.world, {
+          ping: item.ping,
+          traceroute: item.traceroute,
+          status: (item.ping?.samples>0 || item.traceroute?.hops) ? "Done" : "Pending"
+        });
+      }
+      // If every row has at least samples or hops, stop early
+      const allDone = list.length && list.every(x => (x.ping?.samples>0) || (x.traceroute?.hops));
+      if(allDone) break;
+    }
+  }
+
+  function msgWorld(s){
+    const elx = el("#worldErr");
+    if(!s){ elx.style.display="none"; elx.textContent=""; }
+    else { elx.style.display="block"; elx.textContent=s; }
+  }
+
+  // ===== Init =====
+  (async function init(){
+    await Promise.all([loadASNs(), loadWorlds()]);
+    el("#toggleWorldsBtn").addEventListener("click", ()=>{ showingAll=!showingAll; renderWorlds(); });
+    el("#startBtn").addEventListener("click", startMeasurement);
+  })();
+</script>
 </body>
 </html>
